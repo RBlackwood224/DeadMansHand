@@ -20,6 +20,7 @@
   <!-- ============ IN-GAME HUD ============ -->
   <div id="hud" class="hidden">
     <button id="btnMenu" class="hudbtn" title="Menu">&#9776;</button>
+    <button id="btnFs" class="hudbtn fsbtn fs-only" title="Full screen">&#x26F6;</button>
     <div id="info"></div>
 
     <div id="taunt">
@@ -86,6 +87,7 @@
       <div class="row2">
         <button class="wood small lang" data-lang="hu">Magyar</button>
         <button class="wood small lang" data-lang="en">English</button>
+        <button class="wood small fs-only" data-fs="1" title="Full screen">&#x26F6;</button>
       </div>
       <a class="gh" href="https://github.com/RBlackwood224" target="_blank" rel="noopener" data-i18n="github"></a>
     </div>
@@ -107,6 +109,7 @@
       <div class="field"><span data-i18n="musicVol"></span><input type="range" id="setMusic" min="0" max="100"></div>
       <div class="field"><span data-i18n="sfxVol"></span><input type="range" id="setSfx" min="0" max="100"></div>
       <div class="field"><span data-i18n="musicOn"></span><input type="checkbox" id="setMusicOn"></div>
+      <button class="wood small fs-only" data-fs="1" data-i18n="fullscreen"></button>
     </div>
     <button class="wood back" data-go="main" data-i18n="back"></button>
   </section>
@@ -177,6 +180,7 @@
       <div class="field"><span data-i18n="language"></span>
         <select id="pLang"><option value="hu">Magyar</option><option value="en">English</option></select></div>
       <button class="wood" id="btnResume" data-i18n="resume"></button>
+      <button class="wood small fs-only" data-fs="1" data-i18n="fullscreen"></button>
       <button class="wood small" id="btnPauseRules" data-i18n="rules"></button>
       <button class="wood red" id="btnLeave" data-i18n="leave"></button>
     </div>

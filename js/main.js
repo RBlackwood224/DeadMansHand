@@ -57,6 +57,23 @@
   window.addEventListener('orientationchange', () => setTimeout(layout, 200));
   layout();
 
+  // ---------------- full screen (mainly for phones) ----------------
+  const docEl = document.documentElement;
+  const fsSupported = !!(docEl.requestFullscreen || docEl.webkitRequestFullscreen);
+  if (!fsSupported) document.body.classList.add('no-fs');
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  function toggleFullscreen() {
+    Sound.play('click');
+    if (isFs()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    const p = (docEl.requestFullscreen || docEl.webkitRequestFullscreen).call(docEl);
+    // on phones also try to lock landscape (not supported everywhere, that's fine)
+    if (p && p.then) p.then(() => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => { }); } catch (e) { } }).catch(() => { });
+  }
+  document.addEventListener('fullscreenchange', () => setTimeout(layout, 100));
+  document.addEventListener('webkitfullscreenchange', () => setTimeout(layout, 100));
+  $$('[data-fs]').forEach(b => b.addEventListener('click', toggleFullscreen));
+  $('#btnFs').addEventListener('click', toggleFullscreen);
+
   // ---------------- screens ----------------
   function show(id) {
     $$('.screen').forEach(s => s.classList.toggle('hidden', s.id !== id));

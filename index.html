@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1a0f08">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Dead Man's Hand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="frame">
+  <canvas id="scene" width="480" height="270"></canvas>
+  <canvas id="overlay"></canvas>
+
+  <!-- ============ IN-GAME HUD ============ -->
+  <div id="hud" class="hidden">
+    <button id="btnMenu" class="hudbtn" title="Menu">&#9776;</button>
+    <div id="info"></div>
+
+    <div id="taunt">
+      <button id="tPrev" class="tbtn">&#9664;</button>
+      <div id="tText"></div>
+      <button id="tNext" class="tbtn">&#9654;</button>
+      <button id="tSay" class="wood small" data-i18n="say"></button>
+      <div id="tHint" data-i18n="tauntHint"></div>
+    </div>
+
+    <div id="banner"></div>
+    <div id="toasts"></div>
+    <div id="status"></div>
+
+    <div id="actions" class="hidden">
+      <div id="raiseBox">
+        <div class="raiseRow">
+          <button class="chip" data-q="half" data-i18n="halfPot"></button>
+          <button class="chip" data-q="pot" data-i18n="pot"></button>
+          <button class="chip" data-q="max" data-i18n="allin"></button>
+        </div>
+        <div class="raiseRow">
+          <button class="chip" id="rMinus">&minus;</button>
+          <input type="range" id="raiseSlider" min="0" max="100" value="0">
+          <button class="chip" id="rPlus">+</button>
+        </div>
+      </div>
+      <div class="actRow">
+        <button id="aFold" class="wood red"></button>
+        <button id="aCall" class="wood"></button>
+        <button id="aRaise" class="wood gold"></button>
+      </div>
+    </div>
+
+    <div id="drawbar" class="hidden">
+      <div id="drawHint" data-i18n="drawHint"></div>
+      <div class="actRow">
+        <button id="dPat" class="wood" data-i18n="standPat"></button>
+        <button id="dSwap" class="wood gold"></button>
+      </div>
+    </div>
+
+    <div id="ctxmenu" class="hidden"></div>
+    <div id="popup" class="hidden"></div>
+  </div>
+
+  <!-- ============ SCREENS ============ -->
+  <section id="scr-main" class="screen">
+    <div class="board titleboard">
+      <h1>Dead Man's Hand</h1>
+      <div class="sub" data-i18n="subtitle"></div>
+    </div>
+    <div class="board menuboard">
+      <label class="lbl" data-i18n="yourName"></label>
+      <input id="nameInput" maxlength="14" autocomplete="off" spellcheck="false">
+      <button class="wood" data-go="solo" data-i18n="solo"></button>
+      <button class="wood" data-go="host" data-i18n="host"></button>
+      <button class="wood" data-go="join" data-i18n="join"></button>
+      <div class="row3">
+        <button class="wood small" data-go="rules" data-i18n="rules"></button>
+        <button class="wood small" data-go="music" data-i18n="music"></button>
+        <button class="wood small" data-go="settings" data-i18n="settings"></button>
+      </div>
+      <div class="row2">
+        <button class="wood small lang" data-lang="hu">Magyar</button>
+        <button class="wood small lang" data-lang="en">English</button>
+      </div>
+      <a class="gh" href="https://github.com/RBlackwood224" target="_blank" rel="noopener" data-i18n="github"></a>
+    </div>
+  </section>
+
+  <section id="scr-rules" class="screen hidden">
+    <div class="board paper scroll">
+      <h2 data-i18n="rules"></h2>
+      <div id="rulesBody"></div>
+    </div>
+    <button class="wood back" data-go="main" data-i18n="back"></button>
+  </section>
+
+  <section id="scr-settings" class="screen hidden">
+    <div class="board paper">
+      <h2 data-i18n="settings"></h2>
+      <div class="field"><span data-i18n="language"></span>
+        <select id="setLang"><option value="hu">Magyar</option><option value="en">English</option></select></div>
+      <div class="field"><span data-i18n="musicVol"></span><input type="range" id="setMusic" min="0" max="100"></div>
+      <div class="field"><span data-i18n="sfxVol"></span><input type="range" id="setSfx" min="0" max="100"></div>
+      <div class="field"><span data-i18n="musicOn"></span><input type="checkbox" id="setMusicOn"></div>
+    </div>
+    <button class="wood back" data-go="main" data-i18n="back"></button>
+  </section>
+
+  <section id="scr-music" class="screen hidden">
+    <div class="board paper">
+      <h2 data-i18n="music"></h2>
+      <p class="small" data-i18n="musicHelp"></p>
+      <div id="trackList"></div>
+      <div class="field"><span data-i18n="musicOn"></span><input type="checkbox" id="musMusicOn"></div>
+      <div class="field"><span data-i18n="shuffle"></span><input type="checkbox" id="musShuffle"></div>
+      <div class="field"><span data-i18n="musicVol"></span><input type="range" id="musVol" min="0" max="100"></div>
+    </div>
+    <button class="wood back" data-go="main" data-i18n="back"></button>
+  </section>
+
+  <section id="scr-join" class="screen hidden">
+    <div class="board paper">
+      <h2 data-i18n="join"></h2>
+      <div class="field"><span data-i18n="enterCode"></span><input id="joinCode" maxlength="5" autocomplete="off" spellcheck="false" style="text-transform:uppercase"></div>
+      <button class="wood gold" id="btnConnect" data-i18n="connect"></button>
+      <p id="joinMsg" class="small"></p>
+    </div>
+    <button class="wood back" data-go="main" data-i18n="back"></button>
+  </section>
+
+  <section id="scr-lobby" class="screen hidden">
+    <div class="lobbywrap">
+      <div class="board paper lobbyset">
+        <h2 id="lobbyTitle"></h2>
+        <div id="shareBox">
+          <div class="small" data-i18n="shareLink"></div>
+          <div class="sharerow"><input id="shareLink" readonly><button class="wood small" id="btnCopy" data-i18n="copy"></button></div>
+          <div class="code"><span data-i18n="roomCode"></span>: <b id="roomCode">…</b></div>
+        </div>
+        <div class="field"><span data-i18n="gameMode"></span>
+          <select id="lMode"><option value="holdem" data-i18n="holdem"></option><option value="draw" data-i18n="draw"></option></select></div>
+        <div class="field"><span data-i18n="blinds"></span>
+          <select id="lBlinds"><option value="10">$5 / $10</option><option value="20">$10 / $20</option><option value="50">$25 / $50</option><option value="100">$50 / $100</option></select></div>
+        <div class="field"><span data-i18n="startMoney"></span>
+          <select id="lStart"><option>500</option><option>1000</option><option>2000</option><option>3000</option><option>5000</option></select></div>
+        <div class="field"><span data-i18n="timer"></span>
+          <select id="lTimer"><option>10</option><option>15</option><option>20</option><option>30</option></select></div>
+        <div class="field"><span data-i18n="aiCount"></span>
+          <select id="lAI"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="field"><span data-i18n="dealer"></span><select id="lDealer"></select></div>
+        <div class="field chk" id="rowRejoin"><input type="checkbox" id="lRejoin"><span data-i18n="allowRejoin"></span></div>
+        <div class="field chk"><input type="checkbox" id="lLoans"><span data-i18n="allowLoans"></span></div>
+      </div>
+      <div class="board paper lobbyplayers">
+        <h2 data-i18n="players"></h2>
+        <div id="playerList"></div>
+        <p id="lobbyMsg" class="small"></p>
+      </div>
+    </div>
+    <div class="lobbybtns">
+      <button class="wood back" id="btnLobbyBack" data-i18n="back"></button>
+      <button class="wood gold" id="btnStart" data-i18n="start"></button>
+    </div>
+  </section>
+
+  <section id="scr-pause" class="screen hidden dim">
+    <div class="board paper">
+      <h2 data-i18n="menu"></h2>
+      <div class="field"><span data-i18n="musicVol"></span><input type="range" id="pMusic" min="0" max="100"></div>
+      <div class="field"><span data-i18n="sfxVol"></span><input type="range" id="pSfx" min="0" max="100"></div>
+      <div class="field"><span data-i18n="musicOn"></span><input type="checkbox" id="pMusicOn"></div>
+      <div class="field"><span data-i18n="language"></span>
+        <select id="pLang"><option value="hu">Magyar</option><option value="en">English</option></select></div>
+      <button class="wood" id="btnResume" data-i18n="resume"></button>
+      <button class="wood small" id="btnPauseRules" data-i18n="rules"></button>
+      <button class="wood red" id="btnLeave" data-i18n="leave"></button>
+    </div>
+  </section>
+
+  <section id="scr-end" class="screen hidden dim">
+    <div class="board paper center">
+      <canvas id="endArt" width="80" height="70"></canvas>
+      <h2 id="endTitle"></h2>
+      <p id="endText"></p>
+      <button class="wood gold" id="btnNewGame" data-i18n="newGame"></button>
+      <button class="wood" id="btnEndMenu" data-i18n="toMenu"></button>
+    </div>
+  </section>
+
+  <div id="rotate"><div>&#8635;</div><span data-i18n="rotate"></span></div>
+  <div id="clickstart"></div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/roster.js"></script>
+<script src="js/poker.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/art.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/net.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

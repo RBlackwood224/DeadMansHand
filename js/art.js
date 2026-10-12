@@ -657,33 +657,43 @@ const Art = (() => {
 
   // first-person left hand (behind/front parts)
   // first-person left hand. x0 = left edge of first card, top = card top, w = width of the card fan
+  // first-person left hand. x0 = left edge of first card, top = card top, w = width of the card fan
   function handBack(c, x0, top, w, sleeve, skin) {
     skin = skin || '#e8a77c';
-    const sd = shade(skin, 0.8), sl = shade(skin, 1.08), slv = shade(sleeve, 0.75);
-    // fingers peeking out on the right edge, behind the cards
-    for (let k = 0; k < 4; k++) {
-      const fy = top + 12 + k * 7;
-      R(c, x0 + w - 4, fy, 8 - (k === 3 ? 2 : 0), 6, skin); R(c, x0 + w + 2 - (k === 3 ? 2 : 0), fy + 1, 1, 4, sd); R(c, x0 + w - 4, fy + 5, 7, 1, sd);
+    const sd = shade(skin, 0.8), slv = shade(sleeve, 0.72), slh = shade(sleeve, 1.15);
+    const cx = x0 + Math.round(w * 0.4);
+    // palm (only its lower part shows below the cards)
+    R(c, cx - 17, top + 40, 34, 1, skin);
+    R(c, cx - 19, top + 41, 38, 2, skin);
+    R(c, cx - 20, top + 43, 40, 25, skin);
+    R(c, cx + 19, top + 43, 1, 25, sd); R(c, cx + 17, top + 41, 2, 2, sd);
+    // cuff
+    R(c, cx - 21, top + 66, 42, 5, '#e8dfc8'); R(c, cx - 21, top + 70, 42, 1, '#b8ad94'); R(c, cx - 21, top + 66, 42, 1, '#fffaf0');
+    // sleeve going down-left out of the screen
+    for (let r = 0; r < 40; r++) {
+      const xl = cx - 21 - Math.floor(r * 0.5);
+      R(c, xl, top + 71 + r, 42, 1, sleeve); R(c, xl, top + 71 + r, 1, 1, slv); R(c, xl + 41, top + 71 + r, 1, 1, slv);
     }
-    // palm under the lower-left part of the cards
-    const pw = Math.min(40, Math.round(w * 0.45));
-    R(c, x0 + 1, top + 36, pw, 22, skin); R(c, x0 - 1, top + 40, pw + 2, 18, skin);
-    R(c, x0 + pw, top + 40, 1, 16, sd); R(c, x0 - 1, top + 57, pw + 2, 1, sd);
-    // sleeve + cuff coming from the bottom-left corner
-    for (let i = 0; i < 40; i++) R(c, x0 - 40 + i, top + 58 + Math.floor((40 - i) * 0.15), 26, 60, i < 2 ? slv : sleeve);
-    R(c, x0 - 4, top + 55, pw + 6, 5, '#e8dfc8'); R(c, x0 - 4, top + 59, pw + 6, 1, '#b8ad94');
+    R(c, cx - 14, top + 72, 2, 30, slh);
   }
-  function handFront(c, x0, top, skin) {
+  function handFront(c, x0, top, w, skin) {
     skin = skin || '#e8a77c';
-    const sd = shade(skin, 0.78), sl = shade(skin, 1.12);
-    // thumb pressing on the first card, coming up diagonally from the palm
-    for (let k = 0; k < 6; k++) {
-      const yy = top + 50 - k * 4, xx = x0 + 2 + k;
-      R(c, xx, yy, 9, 5, skin); P(c, xx, yy, sd); R(c, xx, yy + 1, 1, 4, sd);
+    const sd = shade(skin, 0.78), sdd = shade(skin, 0.62), sl = shade(skin, 1.12), nail = shade(skin, 1.22);
+    // thumb pressing on the front of the cards, leaning slightly right
+    const tx = x0 + Math.round(w * 0.27), ty = top + 25;
+    for (let r = 0; r < 23; r++) {
+      const off = -Math.floor(r / 8);
+      const wdt = r === 0 ? 7 : 10;
+      const xx = tx + off + (r === 0 ? 2 : 0) - (r === 1 ? 0 : 0);
+      R(c, xx, ty + r, wdt, 1, skin);
+      P(c, xx, ty + r, sd);              // left outline
+      P(c, xx + wdt - 1, ty + r, sdd);   // right shadow
+      if (r > 0) P(c, xx + wdt - 2, ty + r, sd);
     }
-    R(c, x0 + 8, top + 22, 8, 5, skin); R(c, x0 + 9, top + 21, 6, 1, skin);
-    R(c, x0 + 9, top + 22, 5, 3, sl); R(c, x0 + 9, top + 25, 5, 1, sd); // nail
-    R(c, x0 + 16, top + 23, 1, 10, sd);
+    // nail
+    R(c, tx + 2, ty + 1, 6, 5, nail); R(c, tx + 2, ty + 6, 6, 1, sd); R(c, tx + 3, ty + 1, 2, 1, '#fff4ea');
+    // knuckle crease
+    R(c, tx + 1, ty + 13, 6, 1, sd);
   }
 
   return { W, H, TABLE, R, P, shade, rimY, text, textW, glyph, SUIT5, CARD_W, CARD_H, drawCard, drawBack, money, coinStack,

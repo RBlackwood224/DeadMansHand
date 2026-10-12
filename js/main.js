@@ -249,7 +249,7 @@
         if (audioUnlocked) Sound.music('game');
         resetVisuals();
       }
-      if (old && old.handNo !== v.handNo) { boardTimes = []; selected.clear(); handPinned = false; }
+      if (old && old.handNo !== v.handNo) { boardTimes = []; selected.clear(); }
       if (v.phase === 'gameover' && prevPhase !== 'gameover') showGameOver(v);
     }
     prevPhase = v.phase;
@@ -291,6 +291,7 @@
         const s = seatOf(e.pid);
         const lab = (I18N[lang].actions[e.a] || e.a.toUpperCase()) + ((e.a === 'call' || e.a === 'raise' || e.a === 'bet' || e.a === 'allin') ? ' ' + money(e.amt) : '');
         tags[e.pid] = { text: lab, until: now + 2600, a: e.a };
+        actBubble(e.pid, T('say_' + e.a, { a: money(e.amt) }), e.a);
         if (e.a === 'fold') Sound.play('fold');
         else if (e.a === 'check') Sound.play('knock');
         else if (e.a === 'allin') { Sound.play('allin'); Sound.play('chips'); }
@@ -301,6 +302,7 @@
       }
       case 'draw': {
         tags[e.pid] = { text: e.n ? I18N[lang].actions.draw + ' ' + e.n : I18N[lang].actions.pat, until: now + 2600 };
+        actBubble(e.pid, e.n ? T('say_draw', { n: e.n }) : T('say_pat'), e.n ? 'draw' : 'check');
         for (let i = 0; i < e.n; i++) setTimeout(() => Sound.play('card'), i * 120);
         if (e.pid === S.me) selected.clear();
         break;
@@ -348,7 +350,7 @@
         say(e.pid, arr[e.i % arr.length], 3200);
         break;
       }
-      case 'turn': if (e.pid === S.me) { Sound.play('turn'); if (e.draw) handPinned = true; } break;
+      case 'turn': if (e.pid === S.me) Sound.play('turn'); break;
       case 'shoot': {
         const s = seatOf(e.pid);
         let from = [240, 120];
@@ -385,6 +387,14 @@
     const ch = p ? ROSTER[p.char] : null;
     const pitch = ch && (ch.build === 'lady') ? 1.5 : (ch && ch.build === 'fat' ? 0.7 : 1);
     Sound.play('babble', { pitch });
+  }
+  // big, coloured speech bubble for actions (fold, check, raise...) so nobody misses them
+  const ACT_COL = { fold: '#8a2a1a', check: '#2a4a8a', call: '#2a6a2a', bet: '#a8640a', raise: '#a8640a', allin: '#b01818', draw: '#5a3a8a' };
+  function actBubble(pid, text, a) {
+    const now = performance.now();
+    const cur = bubbles[pid];
+    if (cur && !cur.act && cur.until > now + 400) return; // don't hide a taunt
+    bubbles[pid] = { text, until: now + 2400, t0: now, act: true, col: ACT_COL[a] || '#2a160a', big: a === 'allin' };
   }
   function moodFor(pid, m, ms) { const c = getCS(pid); c.mood = m; c.moodUntil = performance.now() + ms; }
 
@@ -519,7 +529,7 @@
     let idx = pat ? [] : Array.from(selected);
     if (!Poker.maxDiscardFor(m.cards, idx)) { toast(T('drawHint')); return; }
     sendIntent({ t: 'draw', idx });
-    selected.clear(); handPinned = false;
+    selected.clear();
     $('#drawbar').classList.add('hidden');
   }
   $('#dSwap').addEventListener('click', () => doDraw(false));
@@ -1033,6 +1043,8 @@
     const step = n === 2 ? 30 : 22, x0 = n === 2 ? 30 : 16;
     return { step, x0, w: (n - 1) * step + 34 };
   }
+  const HAND_LOW = 234, HAND_HIGH = 192;
+  function handTop() { return HAND_LOW - handLift * (HAND_LOW - HAND_HIGH); }
   function drawMyHand(c, v, now, dt) {
     const m = v ? me() : null;
     const myChar = m ? ROSTER[m.char] : (S && S.view ? ROSTER[(meSpec() || {}).char || 0] : ROSTER[0]);
@@ -1041,10 +1053,10 @@
     const G = handGeom(n);
     const shown = dealtCount(Object.assign({}, m, { n }), now);
     const myTurnDraw = v.phase === 'draw' && v.toAct === mySeat();
-    const hoverHand = mouse.inside && mouse.x < G.x0 + G.w + 16 && mouse.y > Math.min(212, (252 - handLift * 58) - 8);
-    const target = (hoverHand || handPinned || myTurnDraw) ? 1 : 0;
+    const hoverHand = mouse.inside && mouse.x < G.x0 + G.w + 8 && mouse.y > handTop() - 6;
+    const target = (handPinned || myTurnDraw) ? 1 : 0;
     handLift += (target - handLift) * Math.min(1, dt / 90);
-    const top = Math.round(252 - handLift * 58);
+    const top = Math.round(handTop());
     hoverCard = -1;
     if (hoverHand && handLift > 0.6) {
       for (let i = n - 1; i >= 0; i--) { const x = G.x0 + i * G.step; if (mouse.x >= x && mouse.x < x + (i === n - 1 ? 34 : G.step)) { hoverCard = i; break; } }
@@ -1060,7 +1072,7 @@
       Art.drawCard(c, m.cards[i], x, y, 'big', { dim: m.folded, glow });
       if (selected.has(i)) { Art.R(c, x + 1, y + 1, 32, 3, '#c4262e'); }
     }
-    Art.handFront(c, G.x0, top, skin);
+    Art.handFront(c, G.x0, top, G.w, skin);
   }
 
   // ---------------- overlay (crisp text) ----------------
@@ -1112,7 +1124,7 @@
           if (eq !== null) label += (label ? ' · ' : '') + T('winChance') + ' ' + Math.round(eq * 100) + '%';
           if (label) {
             const col = eq === null ? '#fff2c0' : (eq >= 0.5 ? '#9dff9d' : (eq >= 0.25 ? '#ffe070' : '#ff9a80'));
-            shadowText(label, 76, 252 - handLift * 58 - 7, 6, col, 'VT323');
+            shadowText(label, 76, handTop() - 7, 6, col, 'VT323');
           }
         }
         if (i === mySeatI && p.folded && p.cards && p.cards.length) shadowText(T('folded'), 70, 244, 6, '#d8c8a8', 'VT323');
@@ -1152,7 +1164,7 @@
       shadowText(T('yourTurn') + '  ' + sec, 300, 218, 8 * pulse, sec <= 5 ? '#ff7060' : '#9dff9d');
       if (v.phase === 'draw' && selected.size) {
         const G = handGeom(5);
-        selected.forEach(i => shadowText('✕', G.x0 + i * G.step + 17, 252 - handLift * 58 - 20, 7, '#ff5040', 'VT323'));
+        selected.forEach(i => shadowText('✕', G.x0 + i * G.step + 17, handTop() - 20, 7, '#ff5040', 'VT323'));
       }
     }
     drawBubbles(now, k, v);
@@ -1195,12 +1207,16 @@
       if (s >= 0) {
         const vp = vpOf(s);
         if (vp === 0) { x = 200; y = 214; }
-        else { const cs = getCS(pid); x = VP[vp].x; y = (cs.hy || VP[vp].yb - 84) - 36; }
+        else {
+          const cs = getCS(pid), hy = cs.hy || VP[vp].yb - 84;
+          if (b.act) { x = VP[vp].x + (vp <= 3 ? 40 : -40); y = hy + 8; } // action bubbles sit beside the head
+          else { x = VP[vp].x; y = hy - 36; }
+        }
       } else if (v) {
         const sp = specSpot(pid); if (!sp) { if (pid === S.me) { x = 200; y = 214; } else continue; } else { x = sp.x; y = sp.yb - 60; }
       } else continue;
-      const fs = 6 * k;
-      o.font = `${Math.round(fs)}px VT323`;
+      const fs = (b.act ? (b.big ? 9 : 7.5) : 6) * k;
+      o.font = b.act ? `${Math.round(fs)}px Rye` : `${Math.round(fs)}px VT323`;
       const maxW = 92 * k;
       const words = b.text.split(' '); const lines = []; let line = '';
       for (const w of words) { const t = line ? line + ' ' + w : w; if (o.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
@@ -1208,16 +1224,20 @@
       const lw = Math.max(...lines.map(l => o.measureText(l).width));
       const bw = lw + 8 * k, bh = lines.length * fs * 0.95 + 5 * k;
       let bx = x * k - bw / 2; bx = Math.max(3 * k, Math.min(overlay.width - bw - 3 * k, bx));
-      const by = y * k - bh;
+      let by = y * k - bh;
+      // keep bubbles out from under the taunt panel / top edge
+      const minTop = (x > 262 ? 34 : 4) * k;
+      if (by < minTop) by = minTop;
       const pop = Math.min(1, (now - b.t0) / 120);
       o.save(); o.globalAlpha = Math.min(1, (b.until - now) / 300) ;
       o.translate(x * k, y * k); o.scale(pop, pop); o.translate(-x * k, -y * k);
-      o.fillStyle = '#fbf3dc'; o.strokeStyle = '#2a160a'; o.lineWidth = Math.max(1.5, k * 0.9);
+      o.fillStyle = '#fbf3dc'; o.strokeStyle = b.act ? b.col : '#2a160a'; o.lineWidth = Math.max(1.5, k * (b.act ? 1.4 : 0.9));
       roundRect(o, bx, by, bw, bh, 3 * k); o.fill(); o.stroke();
-      o.beginPath(); o.moveTo(x * k - 3 * k, by + bh - 0.5); o.lineTo(x * k + 1 * k, by + bh + 5 * k); o.lineTo(x * k + 3 * k, by + bh - 0.5); o.closePath(); o.fill();
-      o.beginPath(); o.moveTo(x * k - 3 * k, by + bh); o.lineTo(x * k + 1 * k, by + bh + 5 * k); o.lineTo(x * k + 3 * k, by + bh); o.stroke();
-      o.fillStyle = '#2a160a'; o.textAlign = 'center'; o.textBaseline = 'top';
-      lines.forEach((l, i) => o.fillText(l, bx + bw / 2, by + 2.5 * k + i * fs * 0.95));
+      const tx = Math.max(bx + 5 * k, Math.min(bx + bw - 5 * k, x * k + (b.act && s >= 0 && vpOf(s) !== 0 ? (vpOf(s) <= 3 ? -bw / 2 + 6 * k : bw / 2 - 6 * k) : 0)));
+      o.beginPath(); o.moveTo(tx - 3 * k, by + bh - 0.5); o.lineTo(tx + (b.act && s >= 0 && vpOf(s) !== 0 ? (vpOf(s) <= 3 ? -4 : 4) * k : 1 * k), by + bh + 5 * k); o.lineTo(tx + 3 * k, by + bh - 0.5); o.closePath(); o.fill();
+      o.beginPath(); o.moveTo(tx - 3 * k, by + bh); o.lineTo(tx + (b.act && s >= 0 && vpOf(s) !== 0 ? (vpOf(s) <= 3 ? -4 : 4) * k : 1 * k), by + bh + 5 * k); o.lineTo(tx + 3 * k, by + bh); o.stroke();
+      o.fillStyle = b.act ? b.col : '#2a160a'; o.textAlign = 'center'; o.textBaseline = 'top';
+      lines.forEach((l, i) => o.fillText(l, bx + bw / 2, by + (b.act ? 3 : 2.5) * k + i * fs * 0.95));
       o.restore();
     }
   }
@@ -1252,16 +1272,18 @@
     // my hand
     if (m && m.cards && m.cards.length) {
       const G = handGeom(m.cards.length);
-      const top = 252 - handLift * 58;
-      if (p.x < G.x0 + G.w + 16 && p.y > Math.min(212, top - 8)) {
+      const top = handTop();
+      if (p.x < G.x0 + G.w + 8 && p.y > top - 6) {
         if (v.phase === 'draw' && v.toAct === mySeat() && handLift > 0.6) {
           for (let i = m.cards.length - 1; i >= 0; i--) { const x = G.x0 + i * G.step; if (p.x >= x && p.x < x + (i === m.cards.length - 1 ? 34 : G.step)) { toggleSelect(i); return; } }
+          return;
         }
-        if (ev.pointerType !== 'mouse') handPinned = !handPinned;
+        // click / tap on the hand: lift the cards, click again: put them back
+        handPinned = !handPinned;
+        Sound.play('card');
         return;
       }
     }
-    if (ev.pointerType !== 'mouse' && handPinned && !(v.phase === 'draw' && v.toAct === mySeat())) handPinned = false;
     // a character?
     const hit = hitPerson(p);
     if (hit) openCtx(hit, p);

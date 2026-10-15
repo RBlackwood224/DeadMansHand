@@ -166,3 +166,4 @@ body.portrait.ingame #rotate { display: flex; }
 .namerow { margin-top: calc(var(--u) * 4); border-top: calc(var(--u) * 1) dashed #8a6a3a; padding-top: calc(var(--u) * 3); }
 #lobbyName, #joinName { font-family: 'Rye', serif; font-size: calc(var(--u) * 7.5); width: calc(var(--u) * 80); }
 #nameWarn { color: #b01818; font-weight: bold; }
+.whiskybtn.broke { filter: grayscale(1); opacity: 0.45; }

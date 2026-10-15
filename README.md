@@ -23,7 +23,7 @@ Play alone against the AI, or open your own saloon online and invite your friend
 - **Turn clock:** no 10-minute thinkers. Time runs out → you check, or fold if there's a bet
 - **Taunts instead of chat:** 46 friendly insults in speech bubbles (*"May a coyote pee in your hat!"*). Pick one with the mouse wheel
 - **"Spare some cash, partner?"** – go broke and beg the table for a loan. You pay it back with **20% interest** from your winnings. Go broke again and you're out for good
-- **Whiskey on the house** – press 🥃 and the barkeep brings you a glass. The game goes on, but the saloon spins a bit afterwards
+- **Whiskey** – press 🥃 and for $5 the barkeep brings you a glass. The game goes on, but the saloon spins a bit afterwards
 - **No all-in trolling** – shove every hand until everyone folds and the barkeep fines you, warns you, and finally shoots you out (can be switched off)
 - **Shoot troublemakers out of the saloon** – majority vote, the barkeep grabs his shotgun, BANG, and the poor soul flies out the door. The undertaker shows up soon after
 - **Late arrivals** wait at the bar until the hand ends, then take a free chair or an AI's seat

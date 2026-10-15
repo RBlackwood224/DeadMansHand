@@ -788,6 +788,8 @@ class Engine {
     const t = this.now();
     if (this.whiskyAt[pid] && t - this.whiskyAt[pid] < 20000) return;
     if (this.lastWhisky && t - this.lastWhisky < 4500) return; // the barkeep is busy
+    if ((f.p.stack || 0) < 5) { this.emit({ type: 'noMoney', pid }); return; } // no money, no whiskey
+    f.p.stack -= 5; // $5 a glass
     this.whiskyAt[pid] = t; this.lastWhisky = t;
     this.emit({ type: 'whisky', pid, n: f.p.name, i: Math.floor(Math.random() * 12) });
   }

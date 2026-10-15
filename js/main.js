@@ -78,6 +78,8 @@
     if (!S || !S.view) return;
     const b = $('#btnWhisky');
     if (b.classList.contains('cool')) return;
+    const mine = me() || meSpec();
+    if (!mine || (mine.stack || 0) < 5) { toast(T('noWhiskyMoney')); Sound.play('click'); return; }
     Sound.play('click');
     sendIntent({ t: 'whisky' });
     b.classList.add('cool'); setTimeout(() => b.classList.remove('cool'), 20000);
@@ -307,7 +309,7 @@
     });
     // keep humans first; fill empty slots with the AI players at the table
     posters = posters.filter(q => q.human);
-    v.seats.filter(p => p && !p.human).forEach(p => { if (posters.length < 3) posters.push({ name: p.name, char: p.char, human: false, stack: p.stack }); });
+    v.seats.filter(p => p && !p.human).forEach(p => { if (posters.length < POSTER_SLOTS.length) posters.push({ name: p.name, char: p.char, human: false, stack: p.stack }); });
     if (posters.length > POSTER_SLOTS.length) {
       // drop captured ones first when the wall is full
       const keep = posters.filter(q => !q.captured).concat(posters.filter(q => q.captured));
@@ -447,6 +449,7 @@
         break;
       }
       case 'walkout': walkers.push(makeWalker('leaver', e.char)); break;
+      case 'noMoney': if (e.pid === S.me) { toast(T('noWhiskyMoney')); $('#btnWhisky').classList.remove('cool'); } break;
       case 'troll': {
         if (e.lvl === 1) {
           barkeepAim = now + 3500;
@@ -553,6 +556,8 @@
     $('#info').innerHTML = `${modeName}<br>${T('blinds')}: ${money(v.s.sb)}/${money(v.s.bb)} · ${T('hand')} #${v.handNo}` + (S.code ? `<br>${T('roomCode')}: ${S.code}` : '');
     const m = me(), seat = mySeat();
     const myTurn = m && v.toAct === seat;
+    // whiskey button greyed out without money
+    { const mine = me() || meSpec(); $('#btnWhisky').classList.toggle('broke', !mine || (mine.stack || 0) < 5); }
     // betting
     const showAct = myTurn && v.phase === 'bet';
     $('#actions').classList.toggle('hidden', !showAct);

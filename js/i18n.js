@@ -79,7 +79,7 @@ const I18N = {
     trollYou1: 'Fined for all-in trolling!', trollYou1b: 'Half your money went to the others. Play nice!',
     trollYou2: 'LAST WARNING!', trollYou2b: 'Keep shoving and the barkeep shoots you out of the saloon.',
     badName: 'Watch your mouth, partner – pick another name.',
-    whisky: 'Whiskey – on the house', whiskyNote: '{n} orders a whiskey', glug: '*glug glug*', hic: '*hic!*',
+    whisky: 'Whiskey – $5', noWhiskyMoney: 'No money, no whiskey, cowboy!', whiskyNote: '{n} orders a whiskey', glug: '*glug glug*', hic: '*hic!*',
     ready: 'Ready!', notReady: 'Not ready', readyTag: 'ready', notReadyTag: 'not ready',
     readyCount: '{a}/{b} players ready – you can deal any time', autoStart: 'Everyone is ready – dealing in {n}…',
     pressReady: 'Press "Ready!" when you are set.', waitingOthers: 'Waiting for the others… (the host can start any time)',
@@ -161,7 +161,7 @@ const I18N = {
 <li><b>Late arrivals</b> stand at the bar until the hand ends, then take an empty seat or an AI player's seat.</li>
 <li><b>Broke players</b> may stay and watch.</li>
 <li><b>The barkeep keeps order:</b> going all in again and again with a big stack until everybody folds is not poker. 4 such hands out of 5 → half your money is shared among the others. 4 more in the next 5 hands → last warning. 2 more in the next 3 hands → BANG, you're shot out and your money is shared. Can be switched off in the lobby.</li>
-<li><b>Whiskey:</b> press the 🥃 button and the barkeep brings you a glass on the house. The game goes on while you drink – but the room spins a little afterwards.</li>
+<li><b>Whiskey:</b> press the 🥃 button and the barkeep brings you a glass for $5. The game goes on while you drink – but the room spins a little afterwards.</li>
 <li><b>Win chance:</b> above your cards you see your hand and your estimated chance to win against the players still in. Only you can see it.</li>
 </ul>`
   },
@@ -240,7 +240,7 @@ const I18N = {
     trollYou1: 'Bírság all-in trollkodásért!', trollYou1b: 'A pénzed fele a többiekhez került. Játssz rendesen!',
     trollYou2: 'UTOLSÓ FIGYELMEZTETÉS!', trollYou2b: 'Ha így folytatod, a kocsmáros kilő a kocsmából.',
     badName: 'Ilyen nevet itt nem lehet, cimbora – válassz másikat.',
-    whisky: 'Whisky – a ház ajándéka', whiskyNote: '{n} rendelt egy whiskyt', glug: '*glugy-glugy*', hic: '*hukk!*',
+    whisky: 'Whisky – $5', noWhiskyMoney: 'Pénz nélkül nincs whisky, cowboy!', whiskyNote: '{n} rendelt egy whiskyt', glug: '*glugy-glugy*', hic: '*hukk!*',
     ready: 'Kész vagyok!', notReady: 'Mégse', readyTag: 'kész', notReadyTag: 'még nincs kész',
     readyCount: '{a}/{b} játékos kész – bármikor oszthatsz', autoStart: 'Mindenki kész – osztás {n}…',
     pressReady: 'Nyomd meg a „Kész vagyok!” gombot, ha mehet.', waitingOthers: 'Várunk a többiekre… (a házigazda bármikor indíthat)',
@@ -322,7 +322,7 @@ const I18N = {
 <li><b>Késők</b> a pultnál állnak a kör végéig, aztán leülnek egy üres helyre vagy egy gépi játékos helyére.</li>
 <li><b>Leégett játékosok</b> nézőként maradhatnak.</li>
 <li><b>A kocsmáros rendet tart:</b> nagy pénzzel újra és újra all in menni, amíg mindenki eldob – az nem póker. 5 körből 4 ilyen → a pénzed fele szétosztva a többieknek. A következő 5 körben még 4 → utolsó figyelmeztetés. A következő 3 körben még 2 → BANG, kilőnek, a pénzed szétosztva. A váróban kikapcsolható.</li>
-<li><b>Whisky:</b> a 🥃 gombbal rendelhetsz, a ház ajándéka. A kocsmáros kihozza, megiszod, a játék közben megy tovább – csak utána egy kicsit forog a kocsma.</li>
+<li><b>Whisky:</b> a 🥃 gombbal rendelhetsz, 5 dollár egy pohár. A kocsmáros kihozza, megiszod, a játék közben megy tovább – csak utána egy kicsit forog a kocsma.</li>
 <li><b>Nyerési esély:</b> a lapjaid fölött látod a kezed értékét és a becsült esélyedet a bent maradt játékosok ellen. Ezt csak te látod.</li>
 </ul>`
   }

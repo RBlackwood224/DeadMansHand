@@ -70,7 +70,7 @@ Music goes into the `music` folder: `menu.mp3`, `saloon1.mp3`, `saloon2.mp3`, `s
 
 ## Under the hood
 
-Plain HTML, CSS and JavaScript with a canvas. All the pixel art – the saloon, the characters, the cards – is drawn in code. Sound effects are made live with the Web Audio API, online play uses PeerJS. The music is my own C64-style tracks, made with Suno.
+Plain HTML, CSS and JavaScript with a canvas. All the pixel art – the saloon, the characters, the cards – is drawn in code. Sound effects are made live with the Web Audio API, online play uses PeerJS. The music is my own C64-style tracks.
 
 ## Known quirks
 

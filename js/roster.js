@@ -42,3 +42,18 @@ const ROSTER = [
     skin: '#e6ad84', hat: 'cowboy', hatC: '#8f8a80', hair: '#8a8a8a', face: 'mustache', nose: 'normal',
     coat: '#7a5a3a', shirt: '#cfc2a0', neck: 'bandana', smoke: 'chew', build: 'normal', extra: 'badge' }
 ];
+
+// background people of the saloon (not players): saloon girls at night and some colourful western folk
+const NPCS = [
+  { name: 'Lily', girl: true, skin: '#f6c9a6', hat: 'feather', hatC: '#a8283c', hair: '#3a2010', face: 'lady', nose: 'small', coat: '#a8283c', shirt: '#f4dce4', neck: 'pearls', build: 'lady' },
+  { name: 'Rosie', girl: true, skin: '#f3c4a0', hat: 'feather', hatC: '#1f6a6a', hair: '#e0b040', face: 'lady', nose: 'small', coat: '#1f6a6a', shirt: '#e8f0e8', neck: 'pearls', build: 'lady' },
+  { name: 'Belle', girl: true, skin: '#e8b08a', hat: 'bun', hatC: '#5a2a14', hair: '#5a2a14', face: 'lady', nose: 'small', coat: '#5e2a72', shirt: '#efe0f0', neck: 'pearls', build: 'lady' },
+  { name: 'Doc Snakeoil', skin: '#ecc0a0', hat: 'tophat', hatC: '#4a2a5a', hair: '#8a6a4a', face: 'pencil', nose: 'long', coat: '#2e5e3a', shirt: '#f2efe6', neck: 'bowtie', build: 'thin', vest: '#c8a040', prop: 'bottle' },
+  { name: 'Preacher', skin: '#e8c4a8', hat: 'flat', hatC: '#141414', hair: '#bdbdbd', face: 'none', nose: 'long', coat: '#1a1a1e', shirt: '#f4f4f0', neck: 'none', build: 'thin', prop: 'book' },
+  { name: 'Bounty Hunter', skin: '#c88a62', hat: 'cowboy', hatC: '#3a2a1a', hair: '#2a1a10', face: 'stubble', nose: 'normal', coat: '#8a6a3a', shirt: '#5a4a3a', neck: 'bandana', smoke: 'cig', build: 'normal', extra: 'scar', prop: 'rifle' },
+  { name: 'Prospector', skin: '#d79d77', hat: 'floppy', hatC: '#5a4a32', hair: '#d8d8d8', face: 'longbeard', nose: 'big', coat: '#6a5a3a', shirt: '#9a7a4a', neck: 'none', build: 'normal', extra: 'dirty', prop: 'pickaxe' },
+  { name: 'Cavalry Sergeant', skin: '#e6ad84', hat: 'cowboy', hatC: '#22305a', hair: '#6a4a2a', face: 'mutton', nose: 'normal', coat: '#2a3a7a', shirt: '#e8c050', neck: 'bandana', build: 'normal', extra: 'badge' },
+  { name: 'Card Sharp', skin: '#e4b48e', hat: 'bowler', hatC: '#3a1a1a', hair: '#141414', face: 'mustache', nose: 'normal', coat: '#2a2a2a', shirt: '#f2efe6', neck: 'bowtie', build: 'thin', vest: '#8a1a2a', smoke: 'cig', prop: 'cards' },
+  { name: 'Town Drunk', skin: '#e8a77c', hat: 'floppy', hatC: '#6a5a4a', hair: '#7a5a3a', face: 'stubble', nose: 'red', coat: '#6a4a3a', shirt: '#c8b890', neck: 'none', build: 'fat', extra: 'drunk', prop: 'bottle' },
+  { name: 'Wrangler', skin: '#d39a72', hat: 'bigcowboy', hatC: '#9a6a3a', hair: '#3a2a1a', face: 'mustache', nose: 'normal', coat: '#7a3a2a', shirt: '#d8c8a0', neck: 'bandana', build: 'normal', prop: 'lasso' }
+];

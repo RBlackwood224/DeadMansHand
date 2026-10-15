@@ -338,7 +338,15 @@ const Art = (() => {
       const lh = 20;
       R(c, x - 7, yb, 6, lh - (step ? 1 : 0), pants); R(c, x + 1, yb, 6, lh - (step ? 0 : 1), pants);
       R(c, x - 8 + (step ? 1 : 0), yb + lh - 3, 8, 3, '#2a1a10'); R(c, x + 1 - (step ? 1 : 0), yb + lh - 3, 8, 3, '#2a1a10');
-      if (build === 'lady') { R(c, x - 10, yb, 20, lh - 3, coat); R(c, x - 10, yb + lh - 4, 20, 1, coatD); }
+      if (build === 'lady') { // long, elegant dress with a white petticoat frill
+        const kick = st.dance ? Math.sin(t / 160) : 0;
+        for (let r = 0; r < lh - 2; r++) { const hw = 9 + Math.floor(r / 5); R(c, x - hw + Math.round(kick * r / 8), yb + r, hw * 2, 1, r % 6 === 5 ? coatD : coat); }
+        const fy = yb + lh - 3, lift = Math.round(Math.abs(kick) * 3);
+        R(c, x - 13 + Math.round(kick * 2), fy - lift, 26, 2, '#f4f0e6');
+        for (let k = 0; k < 26; k += 3) P(c, x - 13 + k + Math.round(kick * 2), fy + 2 - lift, '#f4f0e6');
+        if (st.dance && Math.abs(kick) > 0.6) { const lx = kick > 0 ? x + 6 : x - 9; R(c, lx, fy - 2, 3, 4, '#2a1a10'); } // a little boot peeks out
+        R(c, x - 6, yb + 2, 12, 1, coatD);
+      }
     }
 
     const top = yb - 24 + breathe;

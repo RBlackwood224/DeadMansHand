@@ -250,7 +250,7 @@ class Engine {
         });
         ai.debts = [];
         this.emit({ type: 'say', pid: ai.pid, cat: 'leave', i: Math.floor(Math.random() * 3) });
-        this.emit({ type: 'walkout', char: ai.char });
+        this.emit({ type: 'walkout', char: ai.char, n: ai.name, replaced: true });
         this.emit({ type: 'note', key: 'standsUp', n: ai.name });
         this.seats[seat] = null;
       }

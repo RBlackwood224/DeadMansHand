@@ -295,26 +295,30 @@
   let banner = null;
   // WANTED posters on the wall: our own characters (name -> {char, captured})
   let posters = [];
-  const POSTER_SLOTS = [[12, 30], [38, 31], [64, 30], [234, 31], [258, 30]];
+  const POSTER_SLOTS = [[12, 30], [38, 31], [64, 30], [90, 31], [234, 31], [258, 30]];
   function updatePosters(v) {
     if (!v) return;
     const people = v.seats.filter(Boolean).concat(v.specs);
-    people.filter(p => p.human).forEach(p => {
-      let ps = posters.find(q => q.name === p.name);
-      if (!ps) { ps = { name: p.name, char: p.char, human: true, captured: false }; posters.push(ps); }
-      ps.char = p.char;
-      ps.stack = p.stack;
-      if (p.reason === 'broke' && !people.some(q => q.name === p.name && q.stack > 0)) capturePoster(p.name);
-      if (p.stack > 0 && v.seats.some(q => q && q.name === p.name)) { ps.captured = false; ps.queued = false; } // got back in the game
+    const ordered = people.filter(p => p.human).concat(people.filter(p => !p.human)); // humans first
+    ordered.forEach(p => {
+      let ps = posters.find(q => q.name === p.name && !q.vacant);
+      if (!ps) {
+        ps = { name: p.name, char: p.char, human: p.human, captured: false };
+        // a new face takes the place of a bot that gave up its chair, then an empty spot,
+        // and when the wall is full it goes over an old crossed-out poster
+        let idx = posters.findIndex(q => q.vacant);
+        if (idx < 0 && posters.length < POSTER_SLOTS.length) idx = posters.length;
+        if (idx < 0) idx = posters.findIndex(q => q.captured && !(barman && barman.name === q.name) && (!q.paintT0 || performance.now() - q.paintT0 > 1500));
+        if (idx < 0) return; // the wall is full
+        posters[idx] = ps;
+      }
+      ps.char = p.char; ps.stack = p.stack;
+      const seated = v.seats.some(q => q && q.name === p.name);
+      if (p.reason === 'broke') capturePoster(p.name);
+      else if (seated && p.stack > 0 && (ps.captured || ps.queued)) { ps.captured = false; ps.queued = false; ps.paintT0 = 0; } // back in the game
     });
-    // keep humans first; fill empty slots with the AI players at the table
-    posters = posters.filter(q => q.human);
-    v.seats.filter(p => p && !p.human).forEach(p => { if (posters.length < POSTER_SLOTS.length) posters.push({ name: p.name, char: p.char, human: false, stack: p.stack }); });
-    if (posters.length > POSTER_SLOTS.length) {
-      // drop captured ones first when the wall is full
-      const keep = posters.filter(q => !q.captured).concat(posters.filter(q => q.captured));
-      posters = keep.slice(0, POSTER_SLOTS.length);
-    }
+    // anybody who is gone from the saloon gets a red X (a bot that just gave its seat to a player does not)
+    posters.forEach(ps => { if (!ps.vacant && !people.some(p => p.name === ps.name)) capturePoster(ps.name); });
   }
   function capturePoster(name) {
     const ps = posters.find(q => q.name === name);
@@ -448,7 +452,11 @@
         if (v) { const ai = v.seats.find(p => p && !p.human && p.pid !== e.pid); if (ai) setTimeout(() => say(ai.pid, REACT[lang].gun[Math.floor(Math.random() * 3)], 2500), 1400); }
         break;
       }
-      case 'walkout': walkers.push(makeWalker('leaver', e.char)); break;
+      case 'walkout': {
+        walkers.push(makeWalker('leaver', e.char));
+        if (e.replaced) { const ps = posters.find(q => q.name === e.n); if (ps) ps.vacant = true; } // a player takes over this bot's poster
+        break;
+      }
       case 'noMoney': if (e.pid === S.me) { toast(T('noWhiskyMoney')); $('#btnWhisky').classList.remove('cool'); } break;
       case 'troll': {
         if (e.lvl === 1) {
@@ -772,7 +780,7 @@
         Art.drawHead(c, ROSTER[p.char], 8, 14, 16, 15, { t: 0, mood: 1 });
         row.appendChild(cv);
         const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.name; row.appendChild(nm);
-        if (p.isHost) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = '★ host'; row.appendChild(tg); }
+        if (p.isHost) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = '★ ' + T('hostTag'); row.appendChild(tg); }
         else if (p.human && S.role !== 'solo' && v.seats.includes(p)) {
           const tg = document.createElement('span'); tg.className = 'tag ' + (p.ready ? 'ok' : 'notok');
           tg.textContent = p.ready ? '✔ ' + T('readyTag') : '⌛ ' + T('notReadyTag'); row.appendChild(tg);
@@ -910,6 +918,20 @@
       if (kind === 'leaver') { a = 330; b = DOOR_X; }
       return { kind: 'patron', char, x: a, to: b, speed: 0.018 + Math.random() * 0.012, drink: Math.random() < 0.4, fromDoor: a === DOOR_X, toDoor: b === DOOR_X, born: performance.now() };
     }
+    if (kind === 'npc') { // a colourful western character passing through
+      const pool = NPCS.filter(n => !n.girl && !walkers.some(w => w.npc === n));
+      const npc = pool[Math.floor(Math.random() * pool.length)] || NPCS[3];
+      const pts = [-24, DOOR_X, 505];
+      let a = pts[Math.floor(Math.random() * 3)], b;
+      do { b = pts[Math.floor(Math.random() * 3)]; } while (b === a);
+      return { kind: 'patron', npc, x: a, to: b, speed: npc.extra === 'drunk' ? 0.012 : 0.016 + Math.random() * 0.01, drink: false, fromDoor: a === DOOR_X, toDoor: b === DOOR_X, born: performance.now() };
+    }
+    if (kind === 'girl') {
+      const pool = NPCS.filter(n => n.girl && !walkers.some(w => w.npc === n));
+      if (!pool.length) return null;
+      const npc = pool[Math.floor(Math.random() * pool.length)];
+      return { kind: 'patron', npc, x: DOOR_X, to: char, speed: 0.02, fromDoor: true, toDoor: false, barfly: true, spot: char, born: performance.now() };
+    }
     if (kind === 'dog') { const l = Math.random() < 0.5; return { kind, x: l ? -20 : 500, to: l ? 500 : -20, speed: 0.04 }; }
     if (kind === 'tumble') return { kind, x: DOOR_X, to: Math.random() < 0.5 ? -20 : 500, speed: 0.05, fromDoor: true };
     if (kind === 'undertaker') return { kind: 'patron', char: 5, x: DOOR_X, to: 240, back: true, speed: 0.02, fromDoor: true, toDoor: false, pause: 0, born: performance.now() };
@@ -926,7 +948,8 @@
     else { const f = (t - D - DUSK - N) / DUSK; dark = 1 - f; red = Math.sin(f * Math.PI); }
     return { dark, red };
   }
-  const BAR_SPOTS = [300, 470, 96, 284];
+  const BAR_SPOTS = [470, 96, 284];
+  const DANCE_SPOT = 314;
   let nextWalker = performance.now() + 3000;
   function updateWalkers(now, dt) {
     const DS = dayState();
@@ -937,11 +960,21 @@
       const spot = BAR_SPOTS.find(x => !used.has(x));
       if (spot !== undefined) { const w = makeWalker('patron'); w.x = DOOR_X; w.fromDoor = true; w.to = spot; w.toDoor = false; w.barfly = true; w.spot = spot; w.drink = true; walkers.push(w); }
     }
+    // in the evening a couple of saloon girls come in: one dances by the clock, one chats at the bar
+    const girls = walkers.filter(w => w.npc && w.npc.girl && !w.leaving);
+    if (DS.dark > 0.6 && girls.length < 2 && Math.random() < dt / 7000) {
+      const dancing = girls.some(w => w.dance);
+      const used = new Set(walkers.filter(w => w.barfly).map(w => w.spot));
+      const spot = !dancing ? DANCE_SPOT : BAR_SPOTS.find(x => !used.has(x));
+      if (spot !== undefined) { const w = makeWalker('girl', spot); if (w) { w.dance = !dancing; walkers.push(w); } }
+    }
+    if (DS.dark < 0.3) walkers.filter(w => w.npc && w.npc.girl && !w.leaving).forEach(w => { w.leaving = true; w.idle = false; w.to = DOOR_X; w.toDoor = true; });
     if (DS.dark < 0.3) flies.forEach(w => { w.leaving = true; w.idle = false; w.to = DOOR_X; w.toDoor = true; w.pause = 0; });
     if (now > nextWalker) {
       nextWalker = now + (7000 + Math.random() * 9000) * (1 - DS.dark * 0.45);
       const r = Math.random();
-      if (r < 0.62) walkers.push(makeWalker('patron'));
+      if (r < 0.3) walkers.push(makeWalker('patron'));
+      else if (r < 0.62) walkers.push(makeWalker('npc'));
       else if (r < 0.84) walkers.push(makeWalker('dog'));
       else walkers.push(makeWalker('tumble'));
     }
@@ -1043,7 +1076,7 @@
     Art.drawLampFixtures(c, now, Math.min(1, DSs.dark * 1.4));
     // wanted posters (our characters in a game, outlaws from the roster in the menu)
     const plist = posters.length ? posters : MENU_POSTERS;
-    plist.forEach((ps, i) => { const sl = POSTER_SLOTS[i]; if (sl) c.drawImage(posterImg(ps.char, !!ps.captured), sl[0], sl[1] - 1); });
+    plist.forEach((ps, i) => { const sl = POSTER_SLOTS[i]; if (sl && ps && !ps.vacant) c.drawImage(posterImg(ps.char, !!ps.captured), sl[0], sl[1] - 1); });
     Art.drawPianist(c, now);
     if (!barman) Art.drawBartender(c, 410, now);
     if (now < barkeepAim && !(now < bartenderGun) && !barman) { // the barkeep shows his shotgun as a warning
@@ -1067,7 +1100,13 @@
     walkers.forEach(w => {
       if (w.kind === 'dog') Art.drawDog(c, w.x, 134, now, w.dir);
       else if (w.kind === 'tumble') Art.drawTumbleweed(c, w.x, 132, now * (w.dir || 1));
-      else Art.drawChar(c, ROSTER[w.char], w.x, 108, { t: now, legs: true, walk: !(w.pause && now < w.pause), drink: w.drink, mood: w.char === 5 ? -1 : 0, look: w.dir || 0 });
+      else {
+        const ch = w.npc || ROSTER[w.char];
+        const dancing = w.dance && w.idle;
+        const wx = dancing ? w.x + Math.sin(now / 320) * 3 : w.x;
+        Art.drawChar(c, ch, wx, 108, { t: now, legs: true, walk: !w.idle && !(w.pause && now < w.pause), drink: w.drink, dance: dancing, mood: (w.char === 5 && !w.npc) ? -1 : (dancing ? 1 : 0), look: dancing ? Math.round(Math.sin(now / 900)) : (w.dir || 0) });
+        if (ch.prop) drawProp(c, ch, wx, 108, now);
+      }
     });
 
     // the barkeep at work: bringing a whiskey or painting an X on a wanted poster
@@ -1203,6 +1242,19 @@
     }
   }
 
+  // things the background characters carry
+  function drawProp(c, ch, x, yb, now) {
+    const SW = { thin: 22, normal: 28, fat: 34, lady: 24 }[ch.build || 'normal'];
+    const hx = Math.round(x + SW / 2), hy = yb;
+    switch (ch.prop) {
+      case 'bottle': Art.R(c, hx, hy - 7, 3, 7, '#5a3a1a'); Art.R(c, hx + 1, hy - 10, 1, 3, '#5a3a1a'); Art.R(c, hx, hy - 5, 3, 2, '#e8dfc8'); break;
+      case 'book': Art.R(c, hx - 1, hy - 5, 5, 6, '#1a1410'); Art.R(c, hx + 3, hy - 5, 1, 6, '#e8dfc8'); Art.P(c, hx + 1, hy - 3, '#c8a040'); break;
+      case 'rifle': for (let k = 0; k < 18; k++) Art.P(c, hx - 1 + Math.floor(k / 4), hy - 22 + k, '#3a3a40'); Art.R(c, hx + 2, hy - 6, 3, 4, '#6a3a1a'); break;
+      case 'pickaxe': for (let k = 0; k < 14; k++) Art.P(c, hx + Math.floor(k / 5), hy - 14 + k, '#8a5a2a'); Art.R(c, hx - 4, hy - 16, 9, 2, '#8a8a90'); Art.P(c, hx - 5, hy - 15, '#8a8a90'); Art.P(c, hx + 5, hy - 15, '#8a8a90'); break;
+      case 'cards': { const f = Math.floor(now / 400) % 2; for (let k = 0; k < 3; k++) Art.R(c, hx - 2 + k * 2, hy - 6 - (k === 1 ? 1 : 0) - f, 3, 4, k === 1 ? '#c4262e' : '#f4ead2'); break; }
+      case 'lasso': c.strokeStyle = '#b08850'; c.lineWidth = 1; c.beginPath(); c.ellipse(hx + 2.5, hy - 2.5, 4, 3, 0, 0, Math.PI * 2); c.stroke(); Art.R(c, hx, hy - 1, 2, 4, '#b08850'); break;
+    }
+  }
   const BARKEEP = { skin: '#eab08a', hat: 'none', hatC: '#222222', hatC: '#222222', hair: '#222', face: 'handlebar', nose: 'big', coat: '#f2efe6', shirt: '#f2efe6', neck: 'bowtie', build: 'normal', vest: '#b8302e' };
   function serveWhisky(pid, now) {
     Sound.play('glass');
@@ -1370,7 +1422,7 @@
     {
       const plist = posters.length ? posters : MENU_POSTERS;
       plist.forEach((ps, i) => {
-        const sl = POSTER_SLOTS[i]; if (!sl) return;
+        const sl = POSTER_SLOTS[i]; if (!sl || !ps || ps.vacant) return;
         const cx = (sl[0] + 10) * k;
         o.textAlign = 'center'; o.textBaseline = 'middle';
         o.fillStyle = '#6a1a10'; o.font = `${Math.round(3.3 * k)}px Rye`;

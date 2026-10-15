@@ -68,6 +68,7 @@ const I18N = {
     tauntHint: 'Mouse wheel: pick a taunt',
     yourTurn: 'Your turn!',
     winChance: 'win',
+    hostTag: 'host',
     wanted: 'WANTED', reward: 'REWARD', captured: 'CAPTURED',
     allowTroll: 'The barkeep keeps order (no endless all-in trolling)',
     trollFine: 'Hey cowboy! That ain\'t poker, that\'s robbery. Half your money goes to the table!',
@@ -166,7 +167,7 @@ const I18N = {
 </ul>`
   },
   hu: {
-    subtitle: 'Vadnyugati Póker Kocsma',
+    subtitle: 'Vadnyugati pókerkocsma',
     yourName: 'A neved, idegen',
     solo: 'Játék gép ellen',
     host: 'Kocsma nyitása (online)',
@@ -180,21 +181,21 @@ const I18N = {
     language: 'Nyelv',
     musicVol: 'Zene hangereje',
     sfxVol: 'Effektek hangereje',
-    musicOn: 'Zene be',
+    musicOn: 'Zene bekapcsolva',
     musicHelp: 'Tedd az mp3 fájlokat a "music" mappába ezekkel a nevekkel:',
-    trackMenu: 'Menü zene',
+    trackMenu: 'Menüzene',
     trackGame: 'Kocsmazene',
     play: 'Lejátszás',
     stop: 'Állj',
     missing: '(nincs meg a fájl)',
-    shuffle: 'Játék közben véletlen sorrend',
-    lobby: 'Kocsma váró',
+    shuffle: 'Játék közben véletlenszerű sorrend',
+    lobby: 'Kocsmai váró',
     soloSetup: 'Új játék gép ellen',
     gameMode: 'Játék',
     holdem: "Texas Hold'em",
     draw: '5 lapos póker',
     blinds: 'Vakok (blind)',
-    startMoney: 'Kezdő pénz',
+    startMoney: 'Kezdőpénz',
     dealer: 'Első osztó',
     random: 'Véletlen',
     timer: 'Gondolkodási idő',
@@ -202,17 +203,17 @@ const I18N = {
     aiCount: 'Gépi játékosok',
     allowRejoin: 'Ki lehet lépni és vissza lehet jönni',
     allowLoans: 'Kölcsön engedélyezve ("Aggy mán kőccsön!")',
-    roomCode: 'Kocsma kód',
+    roomCode: 'Kocsmakód',
     shareLink: 'Ezt a linket küldd el a cimboráknak:',
     copy: 'Másolás',
     copied: 'Kimásolva!',
     start: 'Osztás!',
-    waitingHost: 'Várunk, hogy a házigazda elindítsa…',
+    waitingHost: 'Várunk, amíg a házigazda elindítja…',
     players: 'A kocsmában',
-    enterCode: 'Kocsma kód',
+    enterCode: 'Kocsmakód',
     connect: 'Belovagolok',
     connecting: 'Lovagolok…',
-    connFail: 'Nem találom azt a kocsmát.',
+    connFail: 'Nem találom ezt a kocsmát.',
     hostLeft: 'A házigazda bezárta a kocsmát.',
     fold: 'Dobok',
     check: 'Passz',
@@ -224,11 +225,12 @@ const I18N = {
     pot: 'Kassza',
     drawBtn: 'Csere',
     standPat: 'Nem cserélek',
-    drawHint: 'Kattints a cserélendő lapokra (max 3, vagy 4, ha ászt tartasz meg)',
+    drawHint: 'Kattints a cserélendő lapokra (legfeljebb 3, vagy 4, ha ászt tartasz meg)',
     say: 'Mondd!',
-    tauntHint: 'Egérgörgő: beszólás választás',
+    tauntHint: 'Egérgörgő: beszólás kiválasztása',
     yourTurn: 'Te jössz!',
     winChance: 'esély',
+    hostTag: 'házigazda',
     wanted: 'KÖRÖZÉS', reward: 'VÉRDÍJ', captured: 'ELFOGVA',
     allowTroll: 'A kocsmáros rendet tart (all-in trollkodás tiltva)',
     trollFine: 'Hé, cowboy! Ez nem póker, ez rablás. A pénzed fele a többieké!',
@@ -236,7 +238,7 @@ const I18N = {
     trollBang: 'Megmondtam!',
     trollFineNote: '{n} bírságot kapott all-in trollkodásért: ${a} – szétosztva a többieknek',
     trollWarnNote: '{n} utolsó figyelmeztetést kapott a kocsmárostól',
-    trollBangNote: 'A kocsmárosnak elege lett {n} játékosból. ${a} szétosztva a többieknek',
+    trollBangNote: 'A kocsmárosnak elege lett {n} cimborából. ${a} szétosztva a többieknek',
     trollYou1: 'Bírság all-in trollkodásért!', trollYou1b: 'A pénzed fele a többiekhez került. Játssz rendesen!',
     trollYou2: 'UTOLSÓ FIGYELMEZTETÉS!', trollYou2b: 'Ha így folytatod, a kocsmáros kilő a kocsmából.',
     badName: 'Ilyen nevet itt nem lehet, cimbora – válassz másikat.',
@@ -244,7 +246,7 @@ const I18N = {
     ready: 'Kész vagyok!', notReady: 'Mégse', readyTag: 'kész', notReadyTag: 'még nincs kész',
     readyCount: '{a}/{b} játékos kész – bármikor oszthatsz', autoStart: 'Mindenki kész – osztás {n}…',
     pressReady: 'Nyomd meg a „Kész vagyok!” gombot, ha mehet.', waitingOthers: 'Várunk a többiekre… (a házigazda bármikor indíthat)',
-    idleMsg: 'Nem nyomtál „Kész”-t, ezért kimaradtál.', sitIn: 'Beszállok!', satOut: '{n} nem volt kész, kimarad',
+    idleMsg: 'Nem nyomtad meg a „Kész vagyok!” gombot, ezért kimaradtál.', sitIn: 'Beszállok!', satOut: '{n} nem volt kész, kimarad',
     sitsIn: '{n} beszáll – a kör végén leül', allReady: 'Mindenki kész!',
     say_fold: 'Dobok!', say_check: 'Passz.', say_call: 'Megadom: {a}', say_bet: 'Tét: {a}!', say_raise: 'Emelek: {a}!', say_allin: 'ALL IN!',
     say_draw: 'Cserélek {n} lapot', say_pat: 'Nem cserélek.',
@@ -257,10 +259,10 @@ const I18N = {
     loanGive: 'Adok',
     loanNo: 'Egy vasat se!',
     loanGot: '{n} kapott ${a} kölcsönt',
-    loanNone: 'Senki nem adott {n} játékosnak egy vasat se. Kiesett!',
+    loanNone: 'Senki sem adott egy vasat se {n} cimborának. Kiesett!',
     debt: 'tartozik',
-    repaid: '{n} visszafizetett ${a}-t (+20%)',
-    kickVote: 'Lelőjük {n} játékost?',
+    repaid: '{n} visszafizetett: ${a} (+20% kamat)',
+    kickVote: 'Lelőjük {n} cimborát?',
     kickStart: 'Lelövés',
     yes: 'Igen, lőjük le!',
     no: 'Hagyjuk',
@@ -293,7 +295,7 @@ const I18N = {
     actions: { fold: 'DOB', check: 'PASSZ', call: 'MEGAD', bet: 'TÉT', raise: 'EMEL', allin: 'ALL IN!', draw: 'CSERÉL', pat: 'NEM CSERÉL' },
     cats: ['Magas lap', 'Pár', 'Két pár', 'Drill', 'Sor', 'Flöss', 'Full', 'Póker', 'Színsor', 'Royal flöss'],
     rulesHtml: `
-<h3>Kézértékek (legerősebb elöl)</h3>
+<h3>Kézértékek (a legerősebbtől)</h3>
 <ol>
 <li><b>Royal flöss</b> – A K Q J 10 egy színben</li>
 <li><b>Színsor</b> – öt egymást követő lap egy színben</li>
@@ -307,15 +309,15 @@ const I18N = {
 <li><b>Magas lap</b></li>
 </ol>
 <h3>Texas Hold'em</h3>
-<p>Mindenki kap 2 titkos lapot. Középre öt közös lap kerül: először 3 (flop), aztán 1 (turn), végül még 1 (river). Licitkör van a flop előtt és minden új lap után. A kezed a 2 saját + 5 közös lapból a legjobb 5.</p>
+<p>Mindenki kap 2 titkos lapot. Középre öt közös lap kerül: először 3 (flop), aztán 1 (turn), végül még 1 (river). Licitkör van a flop előtt és minden új lap után. A kezed a 2 saját és az 5 közös lap közül a legjobb 5 lap.</p>
 <h3>5 lapos póker (a régi kocsmai fajta)</h3>
 <p>Mindenki kap 5 titkos lapot. Licitkör. Utána mindenki cserélhet legfeljebb 3 lapot (4-et, ha a megtartott lap ász). Második licitkör, majd mutatás.</p>
 <h3>Licitálás</h3>
-<p>Az osztótól balra ülő két játékos teszi be a kis és a nagy vakot. Amikor te jössz: <b>dobhatsz</b>, <b>passzolhatsz</b> (ha senki nem tett), <b>megadhatod</b> a tétet, vagy <b>emelhetsz</b>. Nincs limit: bármikor mehetsz all in. Ha all in mész, mindenkitől csak annyit nyerhetsz, amennyit te is be tudtál tenni (mellékkassza).</p>
+<p>Az osztótól balra ülő két játékos teszi be a kis és a nagy vakot. Amikor te jössz: <b>dobhatsz</b>, <b>passzolhatsz</b> (ha senki nem tett), <b>megadhatod</b> a tétet, vagy <b>emelhetsz</b>. Nincs limit: bármikor mehetsz all-in. Ha all-in mész, mindenkitől csak annyit nyerhetsz, amennyit te is be tudtál tenni (mellékkassza).</p>
 <h3>A kocsma házirendje</h3>
 <ul>
 <li><b>Óra:</b> korlátozott ideig gondolkodhatsz. Ha elalszol, automatikusan passzolsz — vagy dobsz, ha van tét.</li>
-<li><b>Beszólások:</b> görgővel választasz, a "Mondd!" gombbal (vagy T billentyűvel) mondod. Nincs chat ablak — csak baráti átkok.</li>
+<li><b>Beszólások:</b> görgővel választasz, a "Mondd!" gombbal (vagy T billentyűvel) mondod. Nincs chatablak — csak baráti átkok.</li>
 <li><b>Kölcsön:</b> ha leégsz és legalább 3-an vagytok, kérhetsz kölcsönt. Mindenki eldönti, mennyit ad. A nyereményeidből automatikusan visszafizeted 20% kamattal. Ha megint leégsz: végleg kiestél.</li>
 <li><b>Lelövés:</b> kattints egy játékosra és indíts szavazást. Ha a többség igent mond, a bajkeverőt kilövik a kocsmából. A házigazdát nem lehet lelőni.</li>
 <li><b>Kész gomb:</b> online mindenki megnyomja a „Kész vagyok!” gombot. Ha mindenki kész, magától indul az osztás. A házigazda bármikor indíthat – aki nem volt kész, kimarad, és a „Beszállok!” gombbal a következő körtől beül.</li>
@@ -341,19 +343,19 @@ const TAUNTS = {
     'Rozsdásodjon be a pisztolyod!',
     'Mindig langyos legyen a söröd!',
     'Vizezze a kocsmáros a whiskydet!',
-    'Csak kettesek jöjjenek neked!',
+    'Csak kettesek jöjjenek a kezedbe!',
     'Költözzön bolha a bajszodba!',
     'Fújja le a szél a bajszodat!',
     'Essél bele a lóitatóba!',
     'Csípjen meg a saját tyúkod!',
     'Csak a postakocsi porát nyeld!',
     'A kecském jobban játszik nálad!',
-    'Még a keselyű se enne meg!',
+    'Még a keselyű se enne meg téged!',
     'Menj haza tehenet fejni, cowboy!',
     'Kár azért a kalapért azon az üres fejen!',
     'Köszi a pénzt, jövő héten is gyere!',
     'Szólj, ha megtanultál játszani!',
-    'Még a seriff is szégyell téged!',
+    'Még a seriff is szégyelli, hogy ismer!',
     'Ilyen lappal én az asztal alá bújnék!',
     'Fogd a kalapod, mert az is az enyém lesz!',
     'Soha többé ne egyél rendes pörköltet!',
@@ -368,12 +370,12 @@ const TAUNTS = {
     'Hú, ez fájt, mi? Hehe!',
     'Ne sírj, sós lesz tőle a whisky!',
     'Ezzel a blöffel egy vak lovat se versz át!',
-    'Tedd zsebre a büszkeséged, más úgyse maradt!',
+    'Tedd zsebre a büszkeségedet, más úgysem maradt!',
     'Hívjátok a sírásót, ennek már annyi!',
     'Találjon meg a legkövérebb szúnyog!',
     'Aludjon rajtad egy tehén!',
-    'Csak így tovább, cimbora, gyűjtöm!',
-    'Szép lap volt, kár hogy nem neked!',
+    'Csak így tovább, cimbora, gyűjtöm a pénzed!',
+    'Szép lap volt, kár, hogy nem a tiéd!',
     'Jó szerencsét… kelleni fog!',
     'Yiiihaaa!',
     'Szép játék volt, partner.'
@@ -434,14 +436,14 @@ const REACT = {
     win: ['Hehe, ez az enyém!', 'Gyere csak, pénzecske!', 'Yiiihaaa!', 'Na ki a király?', 'Köszönöm szépen!'],
     lose: ['Átkozott lapok!', 'Ez nem igaz…', 'Pfff.', 'A nagyanyám jobban osztott!', 'Na várj csak…'],
     think: ['Hmm…', 'Lássuk csak…', 'Ejha.', 'Na ne…'],
-    allin: ['Mindent bele!', 'Vagy minden, vagy semmi!', 'Ez a gazdám lova volt…'],
-    fold: ['Ez nem az én körömet.', 'Passzolom… vagyis dobom.', 'Na, ezt hagyom.'],
+    allin: ['Mindent bele!', 'Vagy minden, vagy semmi!', 'Ez volt a lovam ára…'],
+    fold: ['Ez most nem az én lapom.', 'Passzolnám… vagyis inkább dobok.', 'Na, ezt kihagyom.'],
     leave: ['Na, megyek, vár az asszony.', 'Viszlát, cowboyok!', 'Ennyi volt, megyek fejni.'],
     broke: ['Elfogyott a pénzem!', 'Odalett a lovam ára…'],
     lendYes: ['Itt van, de nehogy elidd!', 'Na jó, de visszakérem kamattal!', 'Fogd, szegény pára.'],
-    lendNo: ['Egy vasat se!', 'Kérj a seriff-től!', 'Menj dolgozni!', 'Majd ha fagy!'],
-    thanks: ['Köszi, partner!', 'Na, ez az én pénzem visszajött!', 'Pontos ember vagy!'],
-    shot: ['Jaj ne!', 'Ááá!', 'Ez nem fair!'],
+    lendNo: ['Egy vasat se!', 'Kérj a serifftől!', 'Menj dolgozni!', 'Majd ha fagy!'],
+    thanks: ['Köszi, partner!', 'Na, visszajött a pénzem!', 'Pontos ember vagy!'],
+    shot: ['Jaj ne!', 'Ááá!', 'Ez nem igazság!'],
     beg: ['Aggy mán kőccsön!', 'Cimborák, egy kis kölcsön? Visszaadom, becsszó!', 'Csak pár dollárt, a lovam életére!', 'Ki segít ki egy leégett cowboyt?'],
     byeBroke: ['Na, nekem ennyi volt. Viszlát, cowboyok!', 'Elfogyott a pénzem, megyek haza. Sziasztok!', 'Ma nem az én napom. Isten veletek!', 'Megyek, mielőtt a lovamat is elveszítem. Viszlát!'],
     order: ['Úgy érzem, hörpintenem kell!', 'Kocsmáros! Egy pusztulatos whiskyt!', 'Erre inni kell…', 'Egy kis bátorító, és jöhet a következő!',

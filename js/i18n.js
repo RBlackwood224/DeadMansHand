@@ -68,6 +68,23 @@ const I18N = {
     tauntHint: 'Mouse wheel: pick a taunt',
     yourTurn: 'Your turn!',
     winChance: 'win',
+    wanted: 'WANTED', reward: 'REWARD', captured: 'CAPTURED',
+    allowTroll: 'The barkeep keeps order (no endless all-in trolling)',
+    trollFine: 'Hey cowboy! That ain\'t poker, that\'s robbery. Half your money goes to the table!',
+    trollWarn: 'Last warning! One more stunt like that and my shotgun does the talkin\'!',
+    trollBang: 'I warned ya!',
+    trollFineNote: '{n} was fined ${a} for all-in trolling – shared among the table',
+    trollWarnNote: '{n} got a last warning from the barkeep',
+    trollBangNote: 'The barkeep had enough of {n}. ${a} shared among the table',
+    trollYou1: 'Fined for all-in trolling!', trollYou1b: 'Half your money went to the others. Play nice!',
+    trollYou2: 'LAST WARNING!', trollYou2b: 'Keep shoving and the barkeep shoots you out of the saloon.',
+    badName: 'Watch your mouth, partner – pick another name.',
+    whisky: 'Whiskey – on the house', whiskyNote: '{n} orders a whiskey', glug: '*glug glug*', hic: '*hic!*',
+    ready: 'Ready!', notReady: 'Not ready', readyTag: 'ready', notReadyTag: 'not ready',
+    readyCount: '{a}/{b} players ready – you can deal any time', autoStart: 'Everyone is ready – dealing in {n}…',
+    pressReady: 'Press "Ready!" when you are set.', waitingOthers: 'Waiting for the others… (the host can start any time)',
+    idleMsg: 'You weren\'t ready, so you sat this one out.', sitIn: 'Deal me in!', satOut: '{n} wasn\'t ready and sits this one out',
+    sitsIn: '{n} wants in – sits down after this hand', allReady: 'Everyone is ready!',
     say_fold: 'Fold!', say_check: 'Check.', say_call: 'Call {a}', say_bet: 'Bet {a}!', say_raise: 'Raise to {a}!', say_allin: 'ALL IN!',
     say_draw: 'Swapping {n}', say_pat: 'Standing pat.',
     folded: 'You folded',
@@ -81,7 +98,7 @@ const I18N = {
     loanGot: '{n} got a loan of ${a}',
     loanNone: 'Nobody lent {n} a dime. Out!',
     debt: 'owes',
-    repaid: '{n} paid back ${a} (+10%)',
+    repaid: '{n} paid back ${a} (+20%)',
     kickVote: 'Shoot {n} out of the saloon?',
     kickStart: 'Shoot',
     yes: 'Yes, shoot!',
@@ -138,10 +155,13 @@ const I18N = {
 <ul>
 <li><b>Clock:</b> you have a limited time to act. If you sleep, you automatically check — or fold if there is a bet.</li>
 <li><b>Taunts:</b> scroll the mouse wheel to pick a taunt, click "Say it!" (or press T). No chat window — only friendly insults.</li>
-<li><b>Loans:</b> if you go broke and at least 3 players are at the table, you can beg for a loan. Everyone decides how much to give. You pay it back automatically with 10% interest from your winnings. If you go broke again: you're out for good.</li>
+<li><b>Loans:</b> if you go broke and at least 3 players are at the table, you can beg for a loan. Everyone decides how much to give. You pay it back automatically with 20% interest from your winnings. If you go broke again: you're out for good.</li>
 <li><b>Shooting:</b> click on a player and start a vote. If the majority agrees, the troublemaker gets shot out of the saloon. The host cannot be shot.</li>
+<li><b>Ready:</b> in an online saloon everybody presses "Ready!". When all are ready, the cards are dealt automatically. The host can also deal any time – whoever wasn't ready sits that game out and can press "Deal me in!" to join from the next hand.</li>
 <li><b>Late arrivals</b> stand at the bar until the hand ends, then take an empty seat or an AI player's seat.</li>
 <li><b>Broke players</b> may stay and watch.</li>
+<li><b>The barkeep keeps order:</b> going all in again and again with a big stack until everybody folds is not poker. 4 such hands out of 5 → half your money is shared among the others. 4 more in the next 5 hands → last warning. 2 more in the next 3 hands → BANG, you're shot out and your money is shared. Can be switched off in the lobby.</li>
+<li><b>Whiskey:</b> press the 🥃 button and the barkeep brings you a glass on the house. The game goes on while you drink – but the room spins a little afterwards.</li>
 <li><b>Win chance:</b> above your cards you see your hand and your estimated chance to win against the players still in. Only you can see it.</li>
 </ul>`
   },
@@ -209,6 +229,23 @@ const I18N = {
     tauntHint: 'Egérgörgő: beszólás választás',
     yourTurn: 'Te jössz!',
     winChance: 'esély',
+    wanted: 'KÖRÖZÉS', reward: 'VÉRDÍJ', captured: 'ELFOGVA',
+    allowTroll: 'A kocsmáros rendet tart (all-in trollkodás tiltva)',
+    trollFine: 'Hé, cowboy! Ez nem póker, ez rablás. A pénzed fele a többieké!',
+    trollWarn: 'Utolsó figyelmeztetés! Még egy ilyen, és a puskám beszél!',
+    trollBang: 'Megmondtam!',
+    trollFineNote: '{n} bírságot kapott all-in trollkodásért: ${a} – szétosztva a többieknek',
+    trollWarnNote: '{n} utolsó figyelmeztetést kapott a kocsmárostól',
+    trollBangNote: 'A kocsmárosnak elege lett {n} játékosból. ${a} szétosztva a többieknek',
+    trollYou1: 'Bírság all-in trollkodásért!', trollYou1b: 'A pénzed fele a többiekhez került. Játssz rendesen!',
+    trollYou2: 'UTOLSÓ FIGYELMEZTETÉS!', trollYou2b: 'Ha így folytatod, a kocsmáros kilő a kocsmából.',
+    badName: 'Ilyen nevet itt nem lehet, cimbora – válassz másikat.',
+    whisky: 'Whisky – a ház ajándéka', whiskyNote: '{n} rendelt egy whiskyt', glug: '*glugy-glugy*', hic: '*hukk!*',
+    ready: 'Kész vagyok!', notReady: 'Mégse', readyTag: 'kész', notReadyTag: 'még nincs kész',
+    readyCount: '{a}/{b} játékos kész – bármikor oszthatsz', autoStart: 'Mindenki kész – osztás {n}…',
+    pressReady: 'Nyomd meg a „Kész vagyok!” gombot, ha mehet.', waitingOthers: 'Várunk a többiekre… (a házigazda bármikor indíthat)',
+    idleMsg: 'Nem nyomtál „Kész”-t, ezért kimaradtál.', sitIn: 'Beszállok!', satOut: '{n} nem volt kész, kimarad',
+    sitsIn: '{n} beszáll – a kör végén leül', allReady: 'Mindenki kész!',
     say_fold: 'Dobok!', say_check: 'Passz.', say_call: 'Megadom: {a}', say_bet: 'Tét: {a}!', say_raise: 'Emelek: {a}!', say_allin: 'ALL IN!',
     say_draw: 'Cserélek {n} lapot', say_pat: 'Nem cserélek.',
     folded: 'Dobtál',
@@ -222,7 +259,7 @@ const I18N = {
     loanGot: '{n} kapott ${a} kölcsönt',
     loanNone: 'Senki nem adott {n} játékosnak egy vasat se. Kiesett!',
     debt: 'tartozik',
-    repaid: '{n} visszafizetett ${a}-t (+10%)',
+    repaid: '{n} visszafizetett ${a}-t (+20%)',
     kickVote: 'Lelőjük {n} játékost?',
     kickStart: 'Lelövés',
     yes: 'Igen, lőjük le!',
@@ -279,10 +316,13 @@ const I18N = {
 <ul>
 <li><b>Óra:</b> korlátozott ideig gondolkodhatsz. Ha elalszol, automatikusan passzolsz — vagy dobsz, ha van tét.</li>
 <li><b>Beszólások:</b> görgővel választasz, a "Mondd!" gombbal (vagy T billentyűvel) mondod. Nincs chat ablak — csak baráti átkok.</li>
-<li><b>Kölcsön:</b> ha leégsz és legalább 3-an vagytok, kérhetsz kölcsönt. Mindenki eldönti, mennyit ad. A nyereményeidből automatikusan visszafizeted 10% kamattal. Ha megint leégsz: végleg kiestél.</li>
+<li><b>Kölcsön:</b> ha leégsz és legalább 3-an vagytok, kérhetsz kölcsönt. Mindenki eldönti, mennyit ad. A nyereményeidből automatikusan visszafizeted 20% kamattal. Ha megint leégsz: végleg kiestél.</li>
 <li><b>Lelövés:</b> kattints egy játékosra és indíts szavazást. Ha a többség igent mond, a bajkeverőt kilövik a kocsmából. A házigazdát nem lehet lelőni.</li>
+<li><b>Kész gomb:</b> online mindenki megnyomja a „Kész vagyok!” gombot. Ha mindenki kész, magától indul az osztás. A házigazda bármikor indíthat – aki nem volt kész, kimarad, és a „Beszállok!” gombbal a következő körtől beül.</li>
 <li><b>Késők</b> a pultnál állnak a kör végéig, aztán leülnek egy üres helyre vagy egy gépi játékos helyére.</li>
 <li><b>Leégett játékosok</b> nézőként maradhatnak.</li>
+<li><b>A kocsmáros rendet tart:</b> nagy pénzzel újra és újra all in menni, amíg mindenki eldob – az nem póker. 5 körből 4 ilyen → a pénzed fele szétosztva a többieknek. A következő 5 körben még 4 → utolsó figyelmeztetés. A következő 3 körben még 2 → BANG, kilőnek, a pénzed szétosztva. A váróban kikapcsolható.</li>
+<li><b>Whisky:</b> a 🥃 gombbal rendelhetsz, a ház ajándéka. A kocsmáros kihozza, megiszod, a játék közben megy tovább – csak utána egy kicsit forog a kocsma.</li>
 <li><b>Nyerési esély:</b> a lapjaid fölött látod a kezed értékét és a becsült esélyedet a bent maradt játékosok ellen. Ezt csak te látod.</li>
 </ul>`
   }
@@ -402,6 +442,11 @@ const REACT = {
     lendNo: ['Egy vasat se!', 'Kérj a seriff-től!', 'Menj dolgozni!', 'Majd ha fagy!'],
     thanks: ['Köszi, partner!', 'Na, ez az én pénzem visszajött!', 'Pontos ember vagy!'],
     shot: ['Jaj ne!', 'Ááá!', 'Ez nem fair!'],
+    beg: ['Aggy mán kőccsön!', 'Cimborák, egy kis kölcsön? Visszaadom, becsszó!', 'Csak pár dollárt, a lovam életére!', 'Ki segít ki egy leégett cowboyt?'],
+    byeBroke: ['Na, nekem ennyi volt. Viszlát, cowboyok!', 'Elfogyott a pénzem, megyek haza. Sziasztok!', 'Ma nem az én napom. Isten veletek!', 'Megyek, mielőtt a lovamat is elveszítem. Viszlát!'],
+    order: ['Úgy érzem, hörpintenem kell!', 'Kocsmáros! Egy pusztulatos whiskyt!', 'Erre inni kell…', 'Egy kis bátorító, és jöhet a következő!',
+      'Hozz egy whiskyt, de duplát!', 'A szerencsémre!', 'Ezt most nem bírom szárazon.', 'Egészségünkre, cimborák!',
+      'Ide egy whiskyt, mielőtt elsírom magam!', 'Kocsmáros, a szokásosat!', 'Egy pohárral, a lovam emlékére!', 'Ennyi szívást csak whiskyvel lehet túlélni.'],
     gun: ['Bumm!', 'Viszlát!', 'Erre ment ki!']
   },
   en: {
@@ -416,6 +461,11 @@ const REACT = {
     lendNo: ['Not a cent!', 'Ask the sheriff!', 'Go get a job!', 'When pigs fly!'],
     thanks: ['Thanks, partner!', 'My money came home!', 'An honest man!'],
     shot: ['Oh no!', 'Aaargh!', 'That ain\'t fair!'],
+    beg: ['Spare some cash, partner?', 'Pals, a little loan? I swear I\'ll pay it back!', 'Just a few dollars, on my horse\'s life!', 'Who\'ll help out a broke cowboy?'],
+    byeBroke: ['Well, that\'s me done. So long, cowboys!', 'Out of money, I\'m headin\' home. Bye now!', 'Not my day. Take care, partners!', 'Better go before I lose my horse too. Adios!'],
+    order: ['I feel a sip comin\' on!', 'Barkeep! A whiskey that\'ll knock me flat!', 'I\'ll drink to that…', 'A little courage before the next hand!',
+      'Whiskey, barkeep – make it a double!', 'To my luck!', 'Can\'t take this one dry.', 'Cheers, partners!',
+      'Whiskey, before I start cryin\'!', 'Barkeep, the usual!', 'One for my poor old horse!', 'Only whiskey gets a man through cards like these.'],
     gun: ['Bang!', 'Adios!', 'He went that way!']
   }
 };

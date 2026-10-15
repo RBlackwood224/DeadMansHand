@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rye&family=VT323&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 <div id="frame">
@@ -21,6 +21,7 @@
   <div id="hud" class="hidden">
     <button id="btnMenu" class="hudbtn" title="Menu">&#9776;</button>
     <button id="btnFs" class="hudbtn fsbtn fs-only" title="Full screen">&#x26F6;</button>
+    <button id="btnWhisky" class="hudbtn whiskybtn" title="Whisky">&#x1F943;</button>
     <div id="info"></div>
 
     <div id="taunt">
@@ -129,6 +130,7 @@
   <section id="scr-join" class="screen hidden">
     <div class="board paper">
       <h2 data-i18n="join"></h2>
+      <div class="field"><span data-i18n="yourName"></span><input id="joinName" maxlength="14" autocomplete="off" spellcheck="false"></div>
       <div class="field"><span data-i18n="enterCode"></span><input id="joinCode" maxlength="5" autocomplete="off" spellcheck="false" style="text-transform:uppercase"></div>
       <button class="wood gold" id="btnConnect" data-i18n="connect"></button>
       <p id="joinMsg" class="small"></p>
@@ -158,15 +160,19 @@
         <div class="field"><span data-i18n="dealer"></span><select id="lDealer"></select></div>
         <div class="field chk" id="rowRejoin"><input type="checkbox" id="lRejoin"><span data-i18n="allowRejoin"></span></div>
         <div class="field chk"><input type="checkbox" id="lLoans"><span data-i18n="allowLoans"></span></div>
+        <div class="field chk"><input type="checkbox" id="lTroll"><span data-i18n="allowTroll"></span></div>
       </div>
       <div class="board paper lobbyplayers">
         <h2 data-i18n="players"></h2>
         <div id="playerList"></div>
+        <div class="field namerow"><span data-i18n="yourName"></span><input id="lobbyName" maxlength="14" autocomplete="off" spellcheck="false"></div>
+        <p id="nameWarn" class="small hidden"></p>
         <p id="lobbyMsg" class="small"></p>
       </div>
     </div>
     <div class="lobbybtns">
       <button class="wood back" id="btnLobbyBack" data-i18n="back"></button>
+      <button class="wood" id="btnReady"></button>
       <button class="wood gold" id="btnStart" data-i18n="start"></button>
     </div>
   </section>
@@ -201,13 +207,14 @@
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="js/i18n.js?v=4"></script>
-<script src="js/roster.js?v=4"></script>
-<script src="js/poker.js?v=4"></script>
-<script src="js/engine.js?v=4"></script>
-<script src="js/art.js?v=4"></script>
-<script src="js/audio.js?v=4"></script>
-<script src="js/net.js?v=4"></script>
-<script src="js/main.js?v=4"></script>
+<script src="js/i18n.js?v=16"></script>
+<script src="js/roster.js?v=16"></script>
+<script src="js/poker.js?v=16"></script>
+<script src="js/filter.js?v=16"></script>
+<script src="js/engine.js?v=16"></script>
+<script src="js/art.js?v=16"></script>
+<script src="js/audio.js?v=16"></script>
+<script src="js/net.js?v=16"></script>
+<script src="js/main.js?v=16"></script>
 </body>
 </html>

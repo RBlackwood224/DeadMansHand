@@ -94,8 +94,11 @@ input[type=checkbox] { width: calc(var(--u) * 7); height: calc(var(--u) * 7); ac
 .fsbtn { left: calc(var(--u) * 22); font-size: calc(var(--u) * 9); }
 .menuboard .row2 > .fs-only { flex: 0 0 auto; }
 body.no-fs .fs-only { display: none !important; }
-body.no-fs #info { left: calc(var(--u) * 22); }
-#info { position: absolute; left: calc(var(--u) * 41); top: calc(var(--u) * 3); font-size: calc(var(--u) * 6.5); color: #e8d5a3; text-shadow: 0 0 calc(var(--u) * 2) #000, 0 0 calc(var(--u) * 2) #000; pointer-events: none; line-height: 1.05; }
+.whiskybtn { left: calc(var(--u) * 41); font-size: calc(var(--u) * 9); }
+body.no-fs .whiskybtn { left: calc(var(--u) * 22); }
+body.no-fs #info { left: calc(var(--u) * 41); }
+.whiskybtn.cool { opacity: 0.4; }
+#info { position: absolute; left: calc(var(--u) * 60); top: calc(var(--u) * 3); font-size: calc(var(--u) * 6.5); color: #e8d5a3; text-shadow: 0 0 calc(var(--u) * 2) #000, 0 0 calc(var(--u) * 2) #000; pointer-events: none; line-height: 1.05; }
 
 #taunt { position: absolute; right: calc(var(--u) * 3); top: calc(var(--u) * 3); display: flex; align-items: center; gap: calc(var(--u) * 2);
   background: rgba(40, 20, 8, 0.8); border: calc(var(--u) * 1) solid #8a5a2e; border-radius: calc(var(--u) * 3); padding: calc(var(--u) * 2) calc(var(--u) * 3); max-width: calc(var(--u) * 210); flex-wrap: wrap; }
@@ -155,3 +158,11 @@ body.portrait.ingame #rotate { display: flex; }
   #tHint { display: none; }
   .tbtn { font-size: calc(var(--u) * 10); padding: 0 calc(var(--u) * 3); }
 }
+
+.pl .tag.ok { color: #2e6e2e; font-weight: bold; }
+.pl .tag.notok { color: #9a5a1a; }
+#lobbyMsg { font-size: calc(var(--u) * 8); color: #6a1a10; font-weight: bold; }
+
+.namerow { margin-top: calc(var(--u) * 4); border-top: calc(var(--u) * 1) dashed #8a6a3a; padding-top: calc(var(--u) * 3); }
+#lobbyName, #joinName { font-family: 'Rye', serif; font-size: calc(var(--u) * 7.5); width: calc(var(--u) * 80); }
+#nameWarn { color: #b01818; font-weight: bold; }

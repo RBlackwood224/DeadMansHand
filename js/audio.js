@@ -78,6 +78,9 @@ const Sound = (() => {
       case 'click': tone('square', 1200, t, 0.03, 0.05); break;
       case 'door': burst(t, 0.25, 0.25, 400, 2); tone('triangle', 300, t, 0.2, 0.04, 200); break;
       case 'cough': burst(t, 0.12, 0.5, 500, 1); burst(t + 0.2, 0.1, 0.4, 450, 1); break;
+      case 'gulp': for (let i = 0; i < 3; i++) { tone('sine', 180 + Math.random() * 40, t + i * 0.28, 0.14, 0.25, 90); burst(t + i * 0.28, 0.08, 0.15, 400, 2, 'lowpass'); } break;
+      case 'hic': tone('sine', 300, t, 0.12, 0.2, 900); tone('square', 600, t + 0.02, 0.05, 0.03); break;
+      case 'glass': tone('sine', 3200, t, 0.25, 0.08); tone('sine', 4100, t + 0.01, 0.2, 0.05); break;
       case 'bark': tone('sawtooth', 500, t, 0.08, 0.1, 300); tone('sawtooth', 520, t + 0.15, 0.08, 0.1, 280); break;
     }
   }

@@ -165,10 +165,19 @@ const Art = (() => {
     R(c, 0, 82, W, 3, '#7a4d2b'); R(c, 0, 82, W, 1, '#9a6a3c'); R(c, 0, 85, W, 1, '#2e1a0e');
     // ceiling beam
     R(c, 0, 0, W, 7, '#3b2414'); R(c, 0, 7, W, 1, '#24150b'); R(c, 0, 2, W, 1, '#4f311c');
-    // floor
-    for (let y = 124; y < 150; y += 4) { R(c, 0, y, W, 4, (y / 4) % 2 ? '#5b3a20' : '#53351d'); R(c, 0, y, W, 1, '#3b2414'); }
-    for (let i = 0; i < 40; i++) R(c, srnd() * W, 124 + Math.floor(srnd() * 6) * 4, 1, 4, '#3b2414');
-
+    // floor: wooden boards all the way down (wider towards the viewer)
+    {
+      let y = 124, i = 0;
+      while (y < H) {
+        const h = Math.round(4 + (y - 124) / 9);
+        R(c, 0, y, W, h, i % 2 ? '#5b3a20' : '#53351d');
+        R(c, 0, y, W, 1, '#3b2414');
+        const seg = 40 + (y - 124);
+        for (let x = (i * 37) % seg; x < W; x += seg) R(c, x, y, 1, h, '#3b2414');
+        for (let k = 0; k < 6; k++) R(c, srnd() * W, y + 1 + srnd() * Math.max(1, h - 2), 2 + srnd() * 6, 1, '#4a2e18');
+        y += h; i++;
+      }
+    }
     // ---- doors (frame + outside) ----
     const dx = 166, dw = 46;
     R(c, dx - 3, 40, dw + 6, 84, '#3a2213');
@@ -188,7 +197,6 @@ const Art = (() => {
     P(c, sx - 6, sy - 1, '#efe6cf'); P(c, sx + 13, sy - 1, '#efe6cf'); R(c, sx + 1, sy + 4, 2, 2, '#2e1a0e'); R(c, sx + 5, sy + 4, 2, 2, '#2e1a0e'); P(c, sx + 3, sy + 10, '#7a6a50'); P(c, sx + 4, sy + 10, '#7a6a50');
 
     // ---- wanted posters ----
-    poster(c, 92, 26); poster(c, 262, 24); poster(c, 290, 34);
 
     // ---- piano (left) ----
     const px = 6;
@@ -248,6 +256,19 @@ const Art = (() => {
     R(c, x + 6, y + 6, 10, 2, '#5a3a1a'); R(c, x + 9, y + 13, 4, 1, '#5a3a1a');
     R(c, x + 4, y + 19, 14, 1, '#8a6a4a'); R(c, x + 5, y + 22, 12, 2, '#6a2a1a');
     P(c, x + 10, y + 1, '#5a5a5a');
+  }
+
+  // small WANTED poster with a player's face (text is drawn on the overlay)
+  function wantedPoster(c, x, y, ch, captured) {
+    const W2 = 20, H2 = 27;
+    R(c, x + 1, y + 1, W2, H2, 'rgba(20,10,4,0.4)'); // shadow
+    R(c, x, y, W2, H2, '#e8d5a3');
+    R(c, x + W2 - 1, y, 1, H2, '#b89a64'); R(c, x, y + H2 - 1, W2, 1, '#b89a64');
+    R(c, x + 1, y + 5, W2 - 2, 1, '#8a3a1a');
+    R(c, x + 2, y + 6, W2 - 4, 14, captured ? '#cdb88a' : '#d8c494');
+    drawHead(c, ch, x + 2, y + 6, 16, 15, { t: 0, mood: captured ? -1 : 0, look: 0, noHat: true });
+    R(c, x + 1, y + 21, W2 - 2, 1, '#8a3a1a');
+    R(c, x + 9, y - 1, 2, 2, '#5a5a5a'); // nail
   }
 
   function drawTable(c) {
@@ -587,28 +608,78 @@ const Art = (() => {
   }
 
   // lamps with flicker
-  function drawLamps(c, t) {
-    const fl = 0.85 + Math.sin(t / 90) * 0.05 + Math.sin(t / 37) * 0.04;
-    // chandelier
+  // lit: 0 = daytime (lamps out), 1 = night (all lamps burning)
+  // fixtures + their small halos sit on the wall, so they are drawn BEHIND the people
+  function drawLampFixtures(c, t, lit) {
+    if (lit === undefined) lit = 1;
+    const fl = (0.85 + Math.sin(t / 90) * 0.05 + Math.sin(t / 37) * 0.04) * (0.25 + lit * 0.95);
     R(c, 239, 7, 2, 10, '#2a1a10');
     R(c, 222, 17, 36, 2, '#4a2e18'); R(c, 226, 19, 28, 1, '#2a1a10');
-    for (const lx of [224, 233, 246, 255]) { R(c, lx, 13, 2, 4, '#efe6cf'); P(c, lx, 11, '#ffd060'); P(c, lx + 1, 12, '#ff9a30'); P(c, lx, 12, '#ffe8a0'); }
-    // wall lamps
-    for (const [lx, ly] of [[128, 50], [318, 46], [250, 64]]) { R(c, lx, ly, 4, 6, '#b08a3a'); R(c, lx - 1, ly - 6, 6, 6, 'rgba(255,220,140,0.7)'); P(c, lx + 1, ly - 3, '#fff2b0'); }
-    // glow
+    for (const lx of [224, 233, 246, 255]) { R(c, lx, 13, 2, 4, '#efe6cf'); if (lit > 0.35) { P(c, lx, 11, '#ffd060'); P(c, lx + 1, 12, '#ff9a30'); P(c, lx, 12, '#ffe8a0'); } else P(c, lx, 12, '#3a2a1a'); }
+    if (lit > 0.35) {
+      c.save(); c.globalCompositeOperation = 'lighter';
+      for (const [lx, ly] of [[130, 46], [320, 42], [252, 60]]) {
+        const g3 = c.createRadialGradient(lx, ly, 1, lx, ly, 34 + lit * 8);
+        g3.addColorStop(0, `rgba(255,200,110,${0.22 * fl})`); g3.addColorStop(1, 'rgba(255,180,90,0)');
+        c.fillStyle = g3; c.fillRect(lx - 42, ly - 42, 84, 84);
+      }
+      c.restore();
+    }
+    for (const [lx, ly] of [[128, 50], [318, 46], [250, 64]]) {
+      R(c, lx, ly, 4, 6, '#b08a3a');
+      if (lit > 0.35) { R(c, lx - 1, ly - 6, 6, 6, 'rgba(255,220,140,0.7)'); P(c, lx + 1, ly - 3, '#fff2b0'); }
+      else { R(c, lx - 1, ly - 6, 6, 6, 'rgba(200,210,215,0.35)'); P(c, lx + 1, ly - 2, '#3a2a1a'); }
+    }
+  }
+  // soft room light on top of everything (no hard spots)
+  function drawLamps(c, t, lit) {
+    if (lit === undefined) lit = 1;
+    const fl = (0.85 + Math.sin(t / 90) * 0.05 + Math.sin(t / 37) * 0.04) * (0.25 + lit * 0.95);
     c.save();
     c.globalCompositeOperation = 'lighter';
     const g = c.createRadialGradient(240, 30, 2, 240, 30, 160);
-    g.addColorStop(0, `rgba(255,190,90,${0.20 * fl})`); g.addColorStop(1, 'rgba(255,170,60,0)');
+    g.addColorStop(0, `rgba(255,190,90,${0.12 * fl})`); g.addColorStop(1, 'rgba(255,170,60,0)');
     c.fillStyle = g; c.fillRect(60, 0, 360, 200);
     const g2 = c.createRadialGradient(240, 190, 4, 240, 190, 150);
     g2.addColorStop(0, `rgba(255,220,140,${0.10 * fl})`); g2.addColorStop(1, 'rgba(255,200,120,0)');
     c.fillStyle = g2; c.fillRect(60, 100, 360, 170);
-    for (const [lx, ly] of [[130, 46], [320, 42], [252, 60]]) {
-      const g3 = c.createRadialGradient(lx, ly, 1, lx, ly, 34);
-      g3.addColorStop(0, `rgba(255,200,110,${0.22 * fl})`); g3.addColorStop(1, 'rgba(255,180,90,0)');
-      c.fillStyle = g3; c.fillRect(lx - 34, ly - 34, 68, 68);
+    c.restore();
+  }
+
+  // the view out of the swinging doors: sky, mesas, cactus – from noon to midnight
+  function mixC(a, b, f) {
+    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    const r = Math.round(((pa >> 16) & 255) * (1 - f) + ((pb >> 16) & 255) * f);
+    const g = Math.round(((pa >> 8) & 255) * (1 - f) + ((pb >> 8) & 255) * f);
+    const bl = Math.round((pa & 255) * (1 - f) + (pb & 255) * f);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1);
+  }
+  // dark: 0 day .. 1 night, red: amount of sunset colour
+  function drawOutside(c, dark, red, t) {
+    const dx = 166, dw = 46;
+    const pick = (day, dusk, night) => mixC(mixC(day, dusk, red), night, dark);
+    const skyTop = pick('#f7d48a', '#d8504a', '#0c1230'), skyMid = pick('#f2c070', '#e8743a', '#141c44'), skyLow = pick('#eab060', '#f0a040', '#202a58');
+    for (let y = 44; y < 70; y++) R(c, dx, y, dw, 1, y < 54 ? skyTop : (y < 62 ? skyMid : skyLow));
+    if (dark > 0.55) { // stars and the moon
+      const a = Math.min(1, (dark - 0.55) / 0.3);
+      for (let k = 0; k < 9; k++) { const sx = dx + 3 + (k * 17) % (dw - 6), sy = 46 + (k * 7) % 14; if ((Math.floor(t / 600) + k) % 5) { c.fillStyle = `rgba(255,255,230,${a * (0.5 + (k % 3) * 0.2)})`; c.fillRect(sx, sy, 1, 1); } }
+      c.fillStyle = `rgba(240,236,210,${a})`; c.fillRect(dx + 33, 47, 5, 5); c.fillRect(dx + 32, 48, 7, 3);
+      c.fillStyle = pick('#f7d48a', '#d8504a', '#0c1230'); c.fillRect(dx + 35, 47, 4, 3);
+    } else if (red > 0.3) { // setting / rising sun
+      c.fillStyle = `rgba(255,220,120,${Math.min(1, red)})`; c.fillRect(dx + 8, 63, 9, 4); c.fillRect(dx + 9, 61, 7, 2);
     }
+    R(c, dx, 70, dw, 54, pick('#e0a860', '#b8683a', '#2c2436'));
+    R(c, dx + 4, 64, 10, 6, pick('#c08050', '#8a3e30', '#1e1828')); R(c, dx + 30, 62, 14, 8, pick('#b87848', '#7a3628', '#1a1424'));
+    const cc = pick('#5a7a3a', '#3e4a2a', '#141c14');
+    R(c, dx + 20, 66, 2, 6, cc); R(c, dx + 18, 67, 1, 3, cc); R(c, dx + 22, 68, 1, 2, cc);
+    R(c, dx, 108, dw, 16, pick('#d89a50', '#a8603a', '#3a3040'));
+  }
+  // daylight falling in through the doors onto the floor
+  function doorLight(c, dark) {
+    const a = (1 - dark) * 0.16;
+    if (a <= 0.01) return;
+    c.save(); c.fillStyle = `rgba(255,225,160,${a})`;
+    c.beginPath(); c.moveTo(166, 124); c.lineTo(212, 124); c.lineTo(250, 150); c.lineTo(140, 150); c.closePath(); c.fill();
     c.restore();
   }
 
@@ -698,5 +769,5 @@ const Art = (() => {
 
   return { W, H, TABLE, R, P, shade, rimY, text, textW, glyph, SUIT5, CARD_W, CARD_H, drawCard, drawBack, money, coinStack,
     makeBackground, drawChar, drawHead, drawHat, drawBartender, drawPianist, drawDoors, drawSign, drawLamps, vignette,
-    drawDog, drawTumbleweed, dealerButton, myGlass, handBack, handFront, poster };
+    drawDog, drawTumbleweed, dealerButton, myGlass, handBack, handFront, poster, wantedPoster, drawOutside, doorLight, drawLampFixtures };
 })();

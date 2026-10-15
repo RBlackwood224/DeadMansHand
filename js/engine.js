@@ -7,7 +7,7 @@
 
 class Engine {
   constructor(settings, io) {
-    this.s = Object.assign({ mode: 'holdem', sb: 10, bb: 20, start: 1000, dealer: -1, timer: 15, ai: 3, rejoin: true, loans: true }, settings || {});
+    this.s = Object.assign({ mode: 'holdem', sb: 10, bb: 20, start: 1000, dealer: -1, timer: 15, ai: 3, rejoin: true, loans: true, antiTroll: true }, settings || {});
     this.io = io;                 // { emit(ev), changed(), kick(pid) }
     this.seats = [null, null, null, null, null, null];
     this.specs = [];              // standing people: {pid,name,char,human,reason:'waiting'|'broke'|'watch',stack,debts,loanUsed}
@@ -68,6 +68,8 @@ class Engine {
 
   uniqueName(name) {
     name = (name || 'Cowboy').trim().slice(0, 14) || 'Cowboy';
+    // no rude names in this saloon
+    if (typeof NameFilter !== 'undefined' && NameFilter.isBad(name)) name = 'Cowboy ' + (10 + Math.floor(Math.random() * 89));
     const taken = new Set(this.allPeople().map(p => p.name.toLowerCase()));
     if (!taken.has(name.toLowerCase())) return name;
     for (let i = 2; i < 99; i++) { const n = name.slice(0, 12) + ' ' + i; if (!taken.has(n.toLowerCase())) return n; }
@@ -177,19 +179,30 @@ class Engine {
     if (o.ai !== undefined) S.ai = Math.max(0, Math.min(5, o.ai | 0));
     if (o.rejoin !== undefined) S.rejoin = !!o.rejoin;
     if (o.loans !== undefined) S.loans = !!o.loans;
+    if (o.antiTroll !== undefined) S.antiTroll = !!o.antiTroll;
     this.changed();
   }
 
   // ---------- game flow ----------
   start() {
+    this.autoStartAt = 0;
     // AIs fill seats
     for (let i = 0; i < 6; i++) if (this.seats[i] && !this.seats[i].human) this.seats[i] = null;
+    // players who did not press "Ready" sit this one out (they can deal themselves in later)
+    const idle = [];
+    for (let i = 0; i < 6; i++) { const p = this.seats[i]; if (p && p.human && p.pid !== this.hostPid && !p.ready) { idle.push([i, p]); this.seats[i] = null; } }
     let want = this.s.ai;
     while (want > 0 && this.addAI()) want--;
     const seated = this.seats.filter(Boolean);
-    if (seated.length < 2) return false;
+    if (seated.length < 2) {
+      for (let i = 0; i < 6; i++) if (this.seats[i] && !this.seats[i].human) this.seats[i] = null;
+      idle.forEach(([i, p]) => { this.seats[i] = p; });
+      return false;
+    }
+    idle.forEach(([i, p]) => { p.reason = 'idle'; p.cards = []; p.folded = true; this.specs.push(p); this.emit({ type: 'note', key: 'satOut', n: p.name }); });
+    this.seats.forEach(p => { if (p) p.ready = false; });
     seated.forEach(p => { p.stack = this.s.start; p.debts = []; p.loanUsed = false; p.broke = false; });
-    this.specs.forEach(p => { if (p.human) { p.stack = this.s.start; p.reason = 'waiting'; } });
+    this.specs.forEach(p => { if (p.human) { p.stack = this.s.start; if (p.reason !== 'idle') p.reason = 'waiting'; } });
     this.handNo = 0; this.firstHand = true; this.winner = null; this.bank = {};
     this.dealer = (this.s.dealer >= 0 && this.seats[this.s.dealer]) ? this.s.dealer
       : this.seats.map((p, i) => p ? i : -1).filter(i => i >= 0)[Math.floor(Math.random() * seated.length)];
@@ -201,6 +214,8 @@ class Engine {
 
   backToLobby() {
     // everyone (humans) sits back down, AIs leave
+    this.allPeople().forEach(p => { p.ready = false; });
+    this.autoStartAt = 0; this.waitFn = null; this.toAct = -1; this.deadMoney = 0;
     this.phase = 'lobby'; this.result = null; this.board = []; this.vote = null; this.loan = null; this.winner = null;
     for (let i = 0; i < 6; i++) { const p = this.seats[i]; if (p && !p.human) this.seats[i] = null; if (p) { p.cards = []; p.folded = true; p.bet = 0; p.total = 0; p.lastAct = ''; } }
     this.specs = this.specs.filter(p => p.human);
@@ -219,8 +234,21 @@ class Engine {
         // an AI gives up its chair
         const aiSeats = this.seats.map((p, i) => (p && !p.human) ? i : -1).filter(i => i >= 0);
         if (!aiSeats.length) continue;
-        seat = aiSeats[Math.floor(Math.random() * aiSeats.length)];
+        // prefer an AI that owes nobody money and isn't begging for a loan right now
+        const free = aiSeats.filter(i => !(this.seats[i].debts || []).length && !this.seats[i].broke && !(this.loan && this.loan.pid === this.seats[i].pid));
+        const pool = free.length ? free : aiSeats;
+        seat = pool[Math.floor(Math.random() * pool.length)];
         const ai = this.seats[seat];
+        if (this.loan && this.loan.pid === ai.pid) this.loan = null;
+        // leaving with a debt: pay it all back (with interest) before going
+        (ai.debts || []).forEach(d => {
+          const lender = this.allPeople().find(q => q.pid === d.pid);
+          const pay = Math.min(d.amt, ai.stack);
+          if (!lender || pay <= 0) return;
+          ai.stack -= pay; lender.stack += pay;
+          this.emit({ type: 'repay', from: ai.pid, to: lender.pid, n: ai.name, a: pay });
+        });
+        ai.debts = [];
         this.emit({ type: 'say', pid: ai.pid, cat: 'leave', i: Math.floor(Math.random() * 3) });
         this.emit({ type: 'walkout', char: ai.char });
         this.emit({ type: 'note', key: 'standsUp', n: ai.name });
@@ -242,7 +270,9 @@ class Engine {
     if (this.firstHand) { if (!ok(this.seats[this.dealer])) this.dealer = this.nextSeat(this.dealer, ok); this.firstHand = false; }
     else this.dealer = this.nextSeat(this.dealer, ok);
     this.handNo++;
-    this.seats.forEach(p => { if (p) { p.bet = 0; p.total = 0; p.folded = !ok(p); p.allIn = false; p.acted = false; p.cards = []; p.lastAct = ''; p.discarded = 0; } });
+    this.seats.forEach(p => { if (p) { p.bet = 0; p.total = 0; p.folded = !ok(p); p.allIn = false; p.acted = false; p.cards = []; p.lastAct = ''; p.discarded = 0;
+      p.handStart = p.stack; p.dealtIn = ok(p); p.shoveTry = false; p.trollHand = false; } });
+    this.dealtCount = act.length;
     this.deck = Poker.newDeck();
     let sbSeat, bbSeat;
     if (act.length === 2) { sbSeat = this.dealer; bbSeat = this.nextSeat(this.dealer, ok); }
@@ -319,6 +349,8 @@ class Engine {
       }
     }
     p.acted = true; p.lastAct = label;
+    // all-in right away with a deep stack against 3+ players = suspicious
+    if (label === 'allin' && p.human && (this.round === 'pre' || this.round === 'bet1') && this.dealtCount >= 3 && p.handStart >= 15 * this.s.bb) p.shoveTry = true;
     this.emit({ type: 'act', pid: p.pid, a: label, amt: p.bet });
     if (label === 'allin' && !p.human && Math.random() < 0.6) this.emit({ type: 'say', pid: p.pid, cat: 'allin', i: rndI(3) });
     if (label === 'fold' && !p.human && Math.random() < 0.12) this.emit({ type: 'say', pid: p.pid, cat: 'fold', i: rndI(3) });
@@ -420,6 +452,7 @@ class Engine {
 
   winByFold(p) {
     this.toAct = -1;
+    if (p.shoveTry) p.trollHand = true; // nobody dared to call: classic all-in troll
     const amt = this.potTotal();
     p.stack += amt;
     this.seats.forEach(q => { if (q) q.bet = 0; });
@@ -490,7 +523,7 @@ class Engine {
     else if (Math.random() < 0.3) this.emit({ type: 'say', pid: p.pid, cat: 'win', i: rndI(5), delay: 700 });
   }
 
-  // loan repayment with 10% interest, from the winnings
+  // loan repayment with 20% interest, from the winnings
   repay(p, won) {
     if (!p.debts || !p.debts.length) return;
     let budget = won;
@@ -514,24 +547,83 @@ class Engine {
     this.wait(showMs, () => this.endHand());
   }
 
+  // ---------- the barkeep keeps order: punishing endless all-in trolling ----------
+  // stage 1: 4 troll hands out of the last 5 -> half his money is shared among the others
+  // stage 2: 4 more in the next 5 hands      -> last warning, the shotgun comes out
+  // stage 3: 2 more in the next 3 hands      -> BANG, the rest of his money is shared out
+  checkTrolls() {
+    const bang = [];
+    this.seats.forEach((p, i) => {
+      if (!p || !p.human || !p.dealtIn) return;
+      const T = p.tr || (p.tr = { lvl: 0, hist: [], win: 0, cnt: 0 });
+      const troll = !!p.trollHand; p.trollHand = false;
+      if (T.lvl === 0) {
+        T.hist.push(troll); if (T.hist.length > 5) T.hist.shift();
+        if (T.hist.filter(Boolean).length >= 4) {
+          const amt = Math.floor(p.stack / 2);
+          p.stack -= amt; this.shareOut(amt, p);
+          T.lvl = 1; T.win = 0; T.cnt = 0; T.hist = [];
+          this.emit({ type: 'troll', pid: p.pid, n: p.name, lvl: 1, a: amt });
+        }
+      } else if (T.lvl === 1) {
+        T.win++; if (troll) T.cnt++;
+        if (T.cnt >= 4) { T.lvl = 2; T.win = 0; T.cnt = 0; this.emit({ type: 'troll', pid: p.pid, n: p.name, lvl: 2 }); }
+        else if (T.win >= 5) { T.lvl = 0; T.hist = []; }
+      } else if (T.lvl === 2) {
+        T.win++; if (troll) T.cnt++;
+        if (T.cnt >= 2) bang.push(i);
+        else if (T.win >= 3) { T.lvl = 0; T.hist = []; }
+      }
+    });
+    bang.forEach(i => {
+      const p = this.seats[i]; if (!p) return;
+      const amt = p.stack; p.stack = 0; this.shareOut(amt, p);
+      p.tr = { lvl: 0, hist: [], win: 0, cnt: 0 };
+      this.emit({ type: 'troll', pid: p.pid, n: p.name, lvl: 3, a: amt, host: p.pid === this.hostPid });
+      if (p.pid === this.hostPid) this.toSpectator(i, 'broke'); // the host can't be shot – he just loses everything
+      else this.shoot(p.pid);
+    });
+  }
+  shareOut(amt, from) {
+    const others = this.seats.filter(q => q && q !== from);
+    if (!others.length || amt <= 0) return;
+    const share = Math.floor(amt / others.length);
+    let rem = amt - share * others.length;
+    others.forEach(q => { q.stack += share + (rem > 0 ? 1 : 0); if (rem > 0) rem--; if (q.broke && q.stack > 0) q.broke = false; });
+  }
+
   endHand() {
+    if (this.s.antiTroll) this.checkTrolls();
     // busts
     this.seats.forEach((p, i) => {
       if (!p || p.stack > 0 || p.broke) return;
       if (!p.human) {
-        this.emit({ type: 'say', pid: p.pid, cat: 'broke', i: rndI(2) });
-        this.emit({ type: 'walkout', char: p.char });
-        this.emit({ type: 'note', key: 'standsUp', n: p.name });
-        this.seats[i] = null;
+        const others = this.seats.filter(q => q && q !== p && q.stack > 0).length;
+        // some AIs beg for a loan, the others say goodbye and leave
+        if (this.s.loans && !p.loanUsed && others >= 2 && Math.random() < 0.45) {
+          p.broke = true; p.brokeAt = this.now(); p.cards = []; p.loanAskAt = this.now() + 1200 + Math.random() * 1500;
+          this.emit({ type: 'say', pid: p.pid, cat: 'broke', i: rndI(2) });
+        } else this.aiLeaves(i);
         return;
       }
       const others = this.seats.filter(q => q && q !== p && q.stack > 0).length;
       if (this.s.loans && !p.loanUsed && others >= 2) { p.broke = true; p.brokeAt = this.now(); p.cards = []; }
       else this.toSpectator(i, 'broke');
     });
+    // now and then a thirsty AI orders a drink
+    if (Math.random() < 0.08) { const ais = this.seats.filter(p => p && !p.human); if (ais.length) this.orderWhisky(ais[Math.floor(Math.random() * ais.length)].pid); }
     this.phase = 'between';
     this.changed();
     this.wait(400, () => this.startHand());
+  }
+
+  aiLeaves(seat) {
+    const p = this.seats[seat]; if (!p) return;
+    this.emit({ type: 'say', pid: p.pid, cat: 'byeBroke', i: rndI(4) });
+    this.emit({ type: 'walkout', char: p.char });
+    this.emit({ type: 'note', key: 'standsUp', n: p.name });
+    if (this.loan && this.loan.pid === p.pid) this.loan = null;
+    this.seats[seat] = null;
   }
 
   toSpectator(seat, reason) {
@@ -583,11 +675,15 @@ class Engine {
       const lf = this.findPid(l); if (!lf) return;
       const give = Math.min(amt, lf.p.stack); if (give <= 0) return;
       lf.p.stack -= give; total += give;
-      p.debts.push({ pid: l, name: lf.p.name, amt: Math.ceil(give * 11 / 10) });
+      p.debts.push({ pid: l, name: lf.p.name, amt: Math.ceil(give * 12 / 10) });
     });
     p.loanUsed = true; p.broke = false;
     if (total > 0) { p.stack = total; this.emit({ type: 'loanDone', pid: p.pid, n: p.name, a: total }); }
-    else { this.emit({ type: 'loanFail', pid: p.pid, n: p.name }); this.toSpectator(f.seat, 'broke'); }
+    else {
+      this.emit({ type: 'loanFail', pid: p.pid, n: p.name });
+      if (p.human) this.toSpectator(f.seat, 'broke');
+      else { const seat = f.seat; this.aiLeaves(seat); }
+    }
     this.changed();
   }
 
@@ -667,12 +763,48 @@ class Engine {
       case 'loanReq': this.requestLoan(pid); break;
       case 'loanGive': this.offerLoan(pid, m.amt); break;
       case 'look': if (this.phase === 'lobby') this.setLook(pid); break;
+      case 'whisky': if (f) this.orderWhisky(pid); break;
+      case 'rename': {
+        if (!f || this.phase !== 'lobby') break;
+        const old = f.p.name; f.p.name = '\u0000';
+        const nn = this.uniqueName(String(m.name || '').slice(0, 14));
+        if (this.kicked.has(nn.toLowerCase())) { f.p.name = old; break; }
+        f.p.name = nn; this.changed();
+        break;
+      }
+      case 'ready':
+        if (this.phase === 'lobby' && f && f.where === 'seat' && pid !== this.hostPid) { f.p.ready = !!m.on; this.checkAutoStart(); this.changed(); }
+        break;
+      case 'sitin':
+        if (f && f.where === 'spec' && f.p.reason === 'idle') { f.p.reason = 'waiting'; if (f.p.stack <= 0) f.p.stack = this.s.start; this.emit({ type: 'note', key: 'sitsIn', n: f.p.name }); this.changed(); }
+        break;
     }
+  }
+
+  // a glass of whiskey, on the house – the barkeep brings it, the game goes on
+  orderWhisky(pid) {
+    const f = this.findPid(pid); if (!f) return;
+    this.whiskyAt = this.whiskyAt || {};
+    const t = this.now();
+    if (this.whiskyAt[pid] && t - this.whiskyAt[pid] < 20000) return;
+    if (this.lastWhisky && t - this.lastWhisky < 4500) return; // the barkeep is busy
+    this.whiskyAt[pid] = t; this.lastWhisky = t;
+    this.emit({ type: 'whisky', pid, n: f.p.name, i: Math.floor(Math.random() * 12) });
+  }
+
+  // everyone (except the host) pressed Ready -> start automatically after a short countdown
+  checkAutoStart() {
+    const others = this.seats.filter(p => p && p.human && p.pid !== this.hostPid);
+    const enough = this.seats.filter(Boolean).length + this.s.ai >= 2;
+    const all = others.length > 0 && others.every(p => p.ready) && enough;
+    if (all && !this.autoStartAt) { this.autoStartAt = this.now() + 3500; this.emit({ type: 'note', key: 'allReady' }); }
+    if (!all) this.autoStartAt = 0;
   }
 
   // ---------- clock ----------
   tick() {
     const t = this.now();
+    if (this.phase === 'lobby') { this.checkAutoStart(); if (this.autoStartAt && t >= this.autoStartAt) { this.autoStartAt = 0; this.start(); } }
     if (this.waitFn && t >= this.waitAt) { const fn = this.waitFn; this.waitFn = null; fn(); }
     if ((this.phase === 'bet' || this.phase === 'draw') && this.toAct >= 0) {
       const p = this.seats[this.toAct];
@@ -698,7 +830,22 @@ class Engine {
       if (this.loan && t >= this.loan.deadline) { this.loan.lenders.forEach(l => { if (this.loan && this.loan.offers[l] === undefined) this.loan.offers[l] = 0; }); this.resolveLoan(); }
     }
     // broke people who never asked for a loan
-    this.seats.forEach((p, i) => { if (p && p.broke && !(this.loan && this.loan.pid === p.pid) && t - p.brokeAt > 25000) { p.broke = false; this.toSpectator(i, 'broke'); this.changed(); } });
+    this.seats.forEach((p, i) => {
+      if (!p || !p.broke) return;
+      // a broke AI begs the table for a loan
+      if (!p.human && p.loanAskAt && t >= p.loanAskAt && !this.loan) {
+        p.loanAskAt = 0;
+        const lenders = this.seats.filter(q => q && q.pid !== p.pid && q.stack > 0).length;
+        if (lenders >= 2) { this.emit({ type: 'say', pid: p.pid, cat: 'beg', i: rndI(4) }); this.requestLoan(p.pid); }
+        else { this.aiLeaves(i); this.changed(); }
+        return;
+      }
+      if (!(this.loan && this.loan.pid === p.pid) && t - p.brokeAt > 25000) {
+        p.broke = false;
+        if (p.human) this.toSpectator(i, 'broke'); else this.aiLeaves(i);
+        this.changed();
+      }
+    });
   }
 
   // ---------- AI ----------
@@ -756,15 +903,15 @@ class Engine {
       return {
         pid: p.pid, name: p.name, char: p.char, human: p.human, stack: p.stack, bet: p.bet, folded: p.folded, allIn: p.allIn,
         lastAct: p.lastAct, n: p.cards.length, cards: (p.pid === pid || shown) ? p.cards.slice() : null,
-        broke: p.broke, debt: (p.debts || []).reduce((a, d) => a + d.amt, 0), isHost: p.pid === this.hostPid,
+        broke: p.broke, debt: (p.debts || []).reduce((a, d) => a + d.amt, 0), isHost: p.pid === this.hostPid, ready: !!p.ready,
         best: showAll && this.result.best[i] ? this.result.best[i] : null, cat: showAll && this.result.cats ? this.result.cats[i] : undefined,
-        discarded: p.discarded || 0, loanUsed: p.loanUsed
+        discarded: p.discarded || 0, loanUsed: p.loanUsed, troll: p.tr ? p.tr.lvl : 0
       };
     };
     const V = this.vote, L = this.loan;
     return {
       phase: this.phase, round: this.round, handNo: this.handNo, mode: this.s.mode,
-      s: { sb: this.s.sb, bb: this.s.bb, timer: this.s.timer, loans: this.s.loans, rejoin: this.s.rejoin, start: this.s.start, ai: this.s.ai, dealer: this.s.dealer },
+      s: { sb: this.s.sb, bb: this.s.bb, timer: this.s.timer, loans: this.s.loans, antiTroll: this.s.antiTroll, rejoin: this.s.rejoin, start: this.s.start, ai: this.s.ai, dealer: this.s.dealer },
       board: this.board.slice(), pot: this.potCollected(), potTotal: this.potTotal(), curBet: this.curBet, minRaise: this.minRaise,
       toAct: this.toAct, left: Math.max(0, this.deadline - t), dealer: this.dealer, sbSeat: this.sbSeat, bbSeat: this.bbSeat,
       me: pid, hostPid: this.hostPid,
@@ -776,7 +923,8 @@ class Engine {
       loan: L ? { pid: L.pid, n: L.name, left: Math.max(0, L.deadline - t), canGive: L.lenders.includes(pid) && L.offers[pid] === undefined,
         max: me ? Math.floor(me.p.stack / 2) : 0 } : null,
       loanPossible: !!(me && me.where === 'seat' && me.p.broke && !this.loan && this.seats.filter(q => q && q.pid !== pid && q.stack > 0).length >= 2),
-      winner: this.winner
+      winner: this.winner,
+      autoLeft: this.autoStartAt ? Math.max(0, this.autoStartAt - t) : 0
     };
   }
 }

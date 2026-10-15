@@ -1,6 +1,6 @@
 # Dead Man's Hand 🤠
 
-A first-person pixel-art poker game set in an old Wild West saloon. Runs right in the browser – no install, no account.
+A first-person pixel-art poker game set in an old Wild West saloon. Runs right in the browser,
 
 **▶ Play it here:** https://rblackwood224.github.io/DeadMansHand/
 
